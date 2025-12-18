@@ -1,0 +1,119 @@
+<div class="bookings-page">
+  <div class="page-header">
+    <div class="container">
+      <h1>Mes Réservations</h1>
+      <p>Consultez et gérez vos réservations</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Filtres -->
+    <div class="filters-bar">
+      <div class="filter-group">
+        <label for="status">Statut:</label>
+        <select id="status" [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+          @for (status of statuses; track status.value) {
+            <option [value]="status.value">{{ status.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="results-count">
+        {{ total }} réservation{{ total > 1 ? 's' : '' }}
+      </div>
+    </div>
+
+    <!-- Contenu -->
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner-large"></div>
+        <p>Chargement de vos réservations...</p>
+      </div>
+    } @else if (error) {
+      <div class="alert alert-error">{{ error }}</div>
+    } @else if (bookings.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📋</span>
+        <h3>Aucune réservation</h3>
+        <p>Vous n'avez pas encore effectué de réservation.</p>
+        <a routerLink="/hotels" class="btn btn-primary">Découvrir nos hôtels</a>
+      </div>
+    } @else {
+      <div class="bookings-list">
+        @for (booking of bookings; track booking._id) {
+          <div class="booking-card">
+            <div class="booking-image">
+              <img [src]="getHotelImage(booking)" [alt]="getHotelName(booking)" />
+              <span class="status-badge" [ngClass]="getStatusClass(booking.status)">
+                {{ getStatusLabel(booking.status) }}
+              </span>
+            </div>
+            
+            <div class="booking-info">
+              <h3>{{ getHotelName(booking) }}</h3>
+              <p class="room-name">🛏️ {{ getRoomName(booking) }}</p>
+              
+              <div class="booking-dates">
+                <div class="date-item">
+                  <span class="label">Arrivée</span>
+                  <span class="value">{{ formatDate(booking.checkInDate) }}</span>
+                </div>
+                <div class="date-separator">→</div>
+                <div class="date-item">
+                  <span class="label">Départ</span>
+                  <span class="value">{{ formatDate(booking.checkOutDate) }}</span>
+                </div>
+              </div>
+
+              <div class="booking-meta">
+                <span>🌙 {{ booking.numberOfNights }} nuit{{ booking.numberOfNights > 1 ? 's' : '' }}</span>
+                <span>👥 {{ booking.numberOfGuests.adults }} adulte{{ booking.numberOfGuests.adults > 1 ? 's' : '' }}</span>
+                <span class="payment-status" [class.paid]="booking.paymentStatus === 'paid'">
+                  {{ getPaymentStatusLabel(booking.paymentStatus) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="booking-price">
+              <span class="total-label">Total</span>
+              <span class="total-amount">{{ booking.totalPrice | number:'1.0-0' }} €</span>
+              <a [routerLink]="['/bookings', booking._id]" class="btn btn-outline">
+                Voir détails
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button
+            class="page-btn"
+            [disabled]="currentPage === 1"
+            (click)="goToPage(currentPage - 1)"
+          >
+            ← Précédent
+          </button>
+          
+          @for (page of getPages(); track page) {
+            <button
+              class="page-btn"
+              [class.active]="page === currentPage"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          }
+          
+          <button
+            class="page-btn"
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(currentPage + 1)"
+          >
+            Suivant →
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>

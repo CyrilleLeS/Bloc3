@@ -1,0 +1,151 @@
+<div class="form-page">
+  <div class="container">
+    <div class="page-header">
+      <a routerLink="/dashboard/hotelier" class="back-link">← Retour au dashboard</a>
+      <h1>Ajouter une chambre</h1>
+      @if (hotelName) {
+        <p class="hotel-name">🏨 {{ hotelName }}</p>
+      }
+    </div>
+
+    <div class="form-card">
+      @if (error) {
+        <div class="alert alert-error">{{ error }}</div>
+      }
+
+      <form [formGroup]="roomForm" (ngSubmit)="onSubmit()">
+        <!-- Informations générales -->
+        <div class="form-section">
+          <h2>Informations générales</h2>
+
+          <div class="form-group">
+            <label for="name">Nom de la chambre *</label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder="Ex: Chambre Deluxe Vue Mer"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="3"
+              placeholder="Décrivez la chambre..."
+            ></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="type">Type de chambre *</label>
+              <select id="type" formControlName="type">
+                @for (type of roomTypes; track type.value) {
+                  <option [value]="type.value">{{ type.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bedType">Type de lit</label>
+              <select id="bedType" formControlName="bedType">
+                @for (bed of bedTypes; track bed.value) {
+                  <option [value]="bed.value">{{ bed.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prix et capacité -->
+        <div class="form-section">
+          <h2>Prix et capacité</h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price">Prix par nuit (€) *</label>
+              <input
+                type="number"
+                id="price"
+                formControlName="price"
+                min="1"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="size">Surface (m²)</label>
+              <input
+                type="number"
+                id="size"
+                formControlName="size"
+                min="1"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="quantity">Quantité disponible *</label>
+              <input
+                type="number"
+                id="quantity"
+                formControlName="quantity"
+                min="1"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="adults">Capacité adultes *</label>
+              <select id="adults" formControlName="adults">
+                @for (n of [1, 2, 3, 4, 5, 6]; track n) {
+                  <option [value]="n">{{ n }} adulte{{ n > 1 ? 's' : '' }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="children">Capacité enfants</label>
+              <select id="children" formControlName="children">
+                @for (n of [0, 1, 2, 3, 4]; track n) {
+                  <option [value]="n">{{ n }} enfant{{ n > 1 ? 's' : '' }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Équipements -->
+        <div class="form-section">
+          <h2>Équipements de la chambre</h2>
+
+          <div class="amenities-grid">
+            @for (amenity of amenitiesList; track amenity.value) {
+              <button
+                type="button"
+                class="amenity-btn"
+                [class.active]="isAmenitySelected(amenity.value)"
+                (click)="toggleAmenity(amenity.value)"
+              >
+                {{ amenity.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <a routerLink="/dashboard/hotelier" class="btn btn-outline">Annuler</a>
+          <button type="submit" class="btn btn-primary" [disabled]="roomForm.invalid || submitting">
+            @if (submitting) {
+              <span class="spinner-sm"></span> Enregistrement...
+            } @else {
+              Créer la chambre
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

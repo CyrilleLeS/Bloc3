@@ -1,0 +1,159 @@
+<div class="hotel-detail-page">
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner-large"></div>
+      <p>Chargement de l'hôtel...</p>
+    </div>
+  } @else if (error || !hotel) {
+    <div class="error-container">
+      <h2>😕 {{ error || 'Hôtel non trouvé' }}</h2>
+      <a routerLink="/hotels" class="btn btn-primary">Retour aux hôtels</a>
+    </div>
+  } @else {
+    <!-- Header avec image -->
+    <div class="hotel-header">
+      <div class="header-image">
+        <img [src]="selectedImage" [alt]="hotel.name" />
+        <div class="header-overlay">
+          <div class="container">
+            <div class="hotel-stars">
+              @for (s of getStars(hotel.stars); track $index) {
+                <span>⭐</span>
+              }
+            </div>
+            <h1>{{ hotel.name }}</h1>
+            <p class="hotel-location">📍 {{ hotel.address.street }}, {{ hotel.address.city }}, {{ hotel.address.country }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Galerie miniatures -->
+      @if (hotel.images && hotel.images.length > 1) {
+        <div class="image-gallery">
+          <div class="container">
+            <div class="gallery-thumbnails">
+              @for (image of hotel.images; track image) {
+                <div 
+                  class="thumbnail" 
+                  [class.active]="selectedImage === image"
+                  (click)="selectImage(image)"
+                >
+                  <img [src]="image" [alt]="hotel.name" />
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="container">
+      <div class="content-grid">
+        <!-- Informations principales -->
+        <div class="main-content">
+          <!-- Description -->
+          <section class="section">
+            <h2>À propos de l'hôtel</h2>
+            <p class="description">{{ hotel.description }}</p>
+          </section>
+
+          <!-- Équipements -->
+          <section class="section">
+            <h2>Équipements</h2>
+            <div class="amenities-grid">
+              @for (amenity of hotel.amenities; track amenity) {
+                <div class="amenity-item">
+                  <span class="amenity-icon">{{ getAmenityIcon(amenity) }}</span>
+                  <span class="amenity-name">{{ formatAmenity(amenity) }}</span>
+                </div>
+              }
+            </div>
+          </section>
+
+          <!-- Chambres disponibles -->
+          <section class="section rooms-section">
+            <h2>Chambres disponibles</h2>
+            
+            @if (rooms.length === 0) {
+              <div class="no-rooms">
+                <p>Aucune chambre disponible pour le moment.</p>
+              </div>
+            } @else {
+              <div class="rooms-list">
+                @for (room of rooms; track room._id) {
+                  <div class="room-card">
+                    <div class="room-image">
+                      <img [src]="getRoomImage(room)" [alt]="room.name" />
+                      <span class="room-type-badge">{{ room.type }}</span>
+                    </div>
+                    <div class="room-info">
+                      <h3>{{ room.name }}</h3>
+                      <p class="room-capacity">
+                        👥 {{ room.capacity.adults }} adulte{{ room.capacity.adults > 1 ? 's' : '' }}
+                        @if (room.capacity.children > 0) {
+                          , {{ room.capacity.children }} enfant{{ room.capacity.children > 1 ? 's' : '' }}
+                        }
+                        @if (room.size) {
+                          &nbsp;• 📐 {{ room.size }} m²
+                        }
+                      </p>
+                      @if (room.description) {
+                        <p class="room-description">{{ room.description }}</p>
+                      }
+                      <div class="room-amenities">
+                        @for (amenity of room.amenities | slice:0:5; track amenity) {
+                          <span class="room-amenity">{{ getRoomAmenityIcon(amenity) }} {{ formatAmenity(amenity) }}</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="room-booking">
+                      <div class="room-price">
+                        <span class="price">{{ room.price | number:'1.0-0' }} €</span>
+                        <span class="per-night">/ nuit</span>
+                      </div>
+                      <button class="btn btn-primary" (click)="bookRoom(room)">
+                        Réserver
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </section>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <div class="info-card">
+            <h3>Informations</h3>
+            
+            @if (hotel.rating > 0) {
+              <div class="rating-box">
+                <span class="rating-score">{{ hotel.rating | number:'1.1-1' }}</span>
+                <div class="rating-info">
+                  <span class="rating-label">Excellent</span>
+                  <span class="rating-count">{{ hotel.totalReviews }} avis</span>
+                </div>
+              </div>
+            }
+
+            <div class="info-item">
+              <strong>Adresse</strong>
+              <p>{{ hotel.address.street }}<br>{{ hotel.address.zipCode }} {{ hotel.address.city }}<br>{{ hotel.address.country }}</p>
+            </div>
+
+            <div class="info-item">
+              <strong>Classification</strong>
+              <p>
+                @for (s of getStars(hotel.stars); track $index) {
+                  ⭐
+                }
+                ({{ hotel.stars }} étoiles)
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  }
+</div>

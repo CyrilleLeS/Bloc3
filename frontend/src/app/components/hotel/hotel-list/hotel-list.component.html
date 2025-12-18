@@ -1,0 +1,162 @@
+<div class="hotel-list-page">
+  <div class="page-header">
+    <div class="container">
+      <h1>Nos Hôtels</h1>
+      <p>Découvrez notre sélection d'hôtels</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="content-wrapper">
+      <!-- Sidebar Filtres -->
+      <aside class="filters-sidebar">
+        <div class="filters-card">
+          <h3>Filtres</h3>
+
+          <!-- Recherche par ville -->
+          <div class="filter-group">
+            <label>Ville</label>
+            <div class="search-input">
+              <input
+                type="text"
+                [(ngModel)]="searchCity"
+                placeholder="Rechercher une ville..."
+                (keyup.enter)="onSearch()"
+              />
+              <button (click)="onSearch()">🔍</button>
+            </div>
+          </div>
+
+          <!-- Filtre étoiles -->
+          <div class="filter-group">
+            <label>Étoiles</label>
+            <div class="stars-filter">
+              @for (star of [1, 2, 3, 4, 5]; track star) {
+                <button
+                  class="star-btn"
+                  [class.active]="selectedStars === star"
+                  (click)="onStarsChange(star)"
+                >
+                  {{ star }} ⭐
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Filtre équipements -->
+          <div class="filter-group">
+            <label>Équipements</label>
+            <div class="amenities-filter">
+              @for (amenity of amenitiesList; track amenity.value) {
+                <button
+                  class="amenity-btn"
+                  [class.active]="isAmenitySelected(amenity.value)"
+                  (click)="toggleAmenity(amenity.value)"
+                >
+                  {{ amenity.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Bouton reset -->
+          <button class="btn btn-outline btn-block" (click)="clearFilters()">
+            Réinitialiser les filtres
+          </button>
+        </div>
+      </aside>
+
+      <!-- Liste des hôtels -->
+      <main class="hotels-content">
+        @if (loading) {
+          <div class="loading-state">
+            <div class="spinner-large"></div>
+            <p>Chargement des hôtels...</p>
+          </div>
+        } @else if (error) {
+          <div class="alert alert-error">{{ error }}</div>
+        } @else if (hotels.length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon">🏨</span>
+            <h3>Aucun hôtel trouvé</h3>
+            <p>Essayez de modifier vos critères de recherche</p>
+            <button class="btn btn-primary" (click)="clearFilters()">
+              Voir tous les hôtels
+            </button>
+          </div>
+        } @else {
+          <div class="results-header">
+            <p>{{ total }} hôtel{{ total > 1 ? 's' : '' }} trouvé{{ total > 1 ? 's' : '' }}</p>
+          </div>
+
+          <div class="hotels-grid">
+            @for (hotel of hotels; track hotel._id) {
+              <div class="hotel-card">
+                <div class="hotel-image">
+                  <img [src]="getHotelImage(hotel)" [alt]="hotel.name" />
+                  <div class="hotel-stars">
+                    @for (s of getStars(hotel.stars); track $index) {
+                      <span>⭐</span>
+                    }
+                  </div>
+                  @if (hotel.rating > 0) {
+                    <div class="hotel-rating">{{ hotel.rating | number:'1.1-1' }}</div>
+                  }
+                </div>
+                <div class="hotel-info">
+                  <h3>{{ hotel.name }}</h3>
+                  <p class="hotel-location">📍 {{ hotel.address.city }}, {{ hotel.address.country }}</p>
+                  <p class="hotel-description">{{ hotel.description | slice:0:120 }}...</p>
+                  <div class="hotel-amenities">
+                    @for (amenity of hotel.amenities | slice:0:4; track amenity) {
+                      <span class="amenity-tag">{{ amenity }}</span>
+                    }
+                    @if (hotel.amenities.length > 4) {
+                      <span class="amenity-more">+{{ hotel.amenities.length - 4 }}</span>
+                    }
+                  </div>
+                  <div class="hotel-footer">
+                    <a [routerLink]="['/hotels', hotel._id]" class="btn btn-primary">
+                      Voir les chambres
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Pagination -->
+          @if (totalPages > 1) {
+            <div class="pagination">
+              <button
+                class="page-btn"
+                [disabled]="currentPage === 1"
+                (click)="goToPage(currentPage - 1)"
+              >
+                ← Précédent
+              </button>
+              
+              @for (page of getPages(); track page) {
+                <button
+                  class="page-btn"
+                  [class.active]="page === currentPage"
+                  (click)="goToPage(page)"
+                >
+                  {{ page }}
+                </button>
+              }
+              
+              <button
+                class="page-btn"
+                [disabled]="currentPage === totalPages"
+                (click)="goToPage(currentPage + 1)"
+              >
+                Suivant →
+              </button>
+            </div>
+          }
+        }
+      </main>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Connexion</h1>
+      <p>Bienvenue ! Connectez-vous à votre compte.</p>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error">
+        {{ error }}
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="votre@email.com"
+          [class.error]="f['email'].invalid && f['email'].touched"
+        />
+        @if (f['email'].invalid && f['email'].touched) {
+          <span class="error-message">
+            @if (f['email'].errors?.['required']) {
+              L'email est requis
+            } @else if (f['email'].errors?.['email']) {
+              Email invalide
+            }
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="••••••••"
+          [class.error]="f['password'].invalid && f['password'].touched"
+        />
+        @if (f['password'].invalid && f['password'].touched) {
+          <span class="error-message">
+            @if (f['password'].errors?.['required']) {
+              Le mot de passe est requis
+            } @else if (f['password'].errors?.['minlength']) {
+              Minimum 6 caractères
+            }
+          </span>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+        @if (loading) {
+          <span class="spinner"></span> Connexion...
+        } @else {
+          Se connecter
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Pas encore de compte ? <a routerLink="/auth/register">Inscrivez-vous</a></p>
+    </div>
+  </div>
+</div>

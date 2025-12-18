@@ -1,0 +1,104 @@
+<div class="profile-page">
+  <div class="container">
+    <h1>Mon Profil</h1>
+
+    @if (loading) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+      </div>
+    } @else if (currentUser) {
+      <div class="profile-grid">
+        <!-- Carte profil -->
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="avatar">
+              {{ currentUser.firstName.charAt(0) }}{{ currentUser.lastName.charAt(0) }}
+            </div>
+            <h2>{{ currentUser.firstName }} {{ currentUser.lastName }}</h2>
+            <span class="role-badge">{{ getRoleLabel(currentUser.role) }}</span>
+          </div>
+
+          <div class="profile-info">
+            <div class="info-item">
+              <span class="label">📧 Email</span>
+              <span class="value">{{ currentUser.email }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">📅 Membre depuis</span>
+              <span class="value">{{ formatDate(currentUser.createdAt) }}</span>
+            </div>
+            @if (currentUser.phone) {
+              <div class="info-item">
+                <span class="label">📞 Téléphone</span>
+                <span class="value">{{ currentUser.phone }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Formulaire de modification -->
+        <div class="edit-card">
+          <h3>Modifier mes informations</h3>
+
+          @if (message) {
+            <div class="alert alert-success">{{ message }}</div>
+          }
+          @if (error) {
+            <div class="alert alert-error">{{ error }}</div>
+          }
+
+          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName">Prénom</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  formControlName="firstName"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="lastName">Nom</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  formControlName="lastName"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Téléphone</label>
+              <input
+                type="tel"
+                id="phone"
+                formControlName="phone"
+                placeholder="+33 6 12 34 56 78"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                [value]="currentUser.email"
+                disabled
+              />
+              <small class="hint">L'email ne peut pas être modifié</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || saving">
+              @if (saving) {
+                <span class="spinner-sm"></span> Enregistrement...
+              } @else {
+                Mettre à jour
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+    }
+  </div>
+</div>

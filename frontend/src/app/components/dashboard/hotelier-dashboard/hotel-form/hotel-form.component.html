@@ -1,0 +1,151 @@
+<div class="form-page">
+  <div class="container">
+    <div class="page-header">
+      <a routerLink="/dashboard/hotelier" class="back-link">← Retour au dashboard</a>
+      <h1>{{ isEditMode ? 'Modifier l\'hôtel' : 'Ajouter un hôtel' }}</h1>
+    </div>
+
+    @if (loading) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+      </div>
+    } @else {
+      <div class="form-card">
+        @if (error) {
+          <div class="alert alert-error">{{ error }}</div>
+        }
+
+        <form [formGroup]="hotelForm" (ngSubmit)="onSubmit()">
+          <!-- Informations générales -->
+          <div class="form-section">
+            <h2>Informations générales</h2>
+
+            <div class="form-group">
+              <label for="name">Nom de l'hôtel *</label>
+              <input
+                type="text"
+                id="name"
+                formControlName="name"
+                placeholder="Ex: Hôtel Le Parisien"
+                [class.error]="f['name'].invalid && f['name'].touched"
+              />
+              @if (f['name'].invalid && f['name'].touched) {
+                <span class="error-message">Le nom est requis (max 100 caractères)</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description *</label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="4"
+                placeholder="Décrivez votre hôtel..."
+                [class.error]="f['description'].invalid && f['description'].touched"
+              ></textarea>
+              @if (f['description'].invalid && f['description'].touched) {
+                <span class="error-message">La description est requise</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="stars">Classification *</label>
+              <div class="stars-selector">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button
+                    type="button"
+                    class="star-btn"
+                    [class.active]="f['stars'].value >= star"
+                    (click)="hotelForm.patchValue({stars: star})"
+                  >
+                    ⭐
+                  </button>
+                }
+                <span class="stars-label">{{ f['stars'].value }} étoile{{ f['stars'].value > 1 ? 's' : '' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Adresse -->
+          <div class="form-section">
+            <h2>Adresse</h2>
+
+            <div class="form-group">
+              <label for="street">Rue *</label>
+              <input
+                type="text"
+                id="street"
+                formControlName="street"
+                placeholder="15 Rue de la Paix"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city">Ville *</label>
+                <input
+                  type="text"
+                  id="city"
+                  formControlName="city"
+                  placeholder="Paris"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="zipCode">Code postal *</label>
+                <input
+                  type="text"
+                  id="zipCode"
+                  formControlName="zipCode"
+                  placeholder="75001"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="country">Pays</label>
+                <input
+                  type="text"
+                  id="country"
+                  formControlName="country"
+                  placeholder="France"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Équipements -->
+          <div class="form-section">
+            <h2>Équipements</h2>
+            <p class="section-hint">Sélectionnez les équipements disponibles dans votre hôtel</p>
+
+            <div class="amenities-grid">
+              @for (amenity of amenitiesList; track amenity.value) {
+                <button
+                  type="button"
+                  class="amenity-btn"
+                  [class.active]="isAmenitySelected(amenity.value)"
+                  (click)="toggleAmenity(amenity.value)"
+                >
+                  {{ amenity.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <a routerLink="/dashboard/hotelier" class="btn btn-outline">Annuler</a>
+            <button type="submit" class="btn btn-primary" [disabled]="hotelForm.invalid || submitting">
+              @if (submitting) {
+                <span class="spinner-sm"></span> Enregistrement...
+              } @else {
+                {{ isEditMode ? 'Mettre à jour' : 'Créer l\'hôtel' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+  </div>
+</div>

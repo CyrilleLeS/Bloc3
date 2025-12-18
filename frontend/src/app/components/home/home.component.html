@@ -1,0 +1,106 @@
+<div class="home">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Trouvez l'hôtel parfait pour votre séjour</h1>
+      <p>Réservez parmi des milliers d'hôtels aux meilleurs prix</p>
+      
+      <div class="search-box">
+        <input
+          type="text"
+          [(ngModel)]="searchCity"
+          placeholder="Où souhaitez-vous aller ?"
+          (keyup.enter)="onSearch()"
+        />
+        <button (click)="onSearch()">
+          🔍 Rechercher
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="container">
+      <div class="feature">
+        <span class="feature-icon">🏆</span>
+        <h3>Meilleurs prix garantis</h3>
+        <p>Nous vous garantissons les meilleurs tarifs disponibles</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🔒</span>
+        <h3>Réservation sécurisée</h3>
+        <p>Paiement 100% sécurisé avec Stripe</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">⭐</span>
+        <h3>Avis vérifiés</h3>
+        <p>Des avis authentiques de vrais voyageurs</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">📞</span>
+        <h3>Support 24/7</h3>
+        <p>Notre équipe est disponible à tout moment</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Hotels Section -->
+  <section class="featured-hotels">
+    <div class="container">
+      <h2>Hôtels populaires</h2>
+      
+      @if (loading) {
+        <div class="loading">
+          <div class="spinner-large"></div>
+          <p>Chargement des hôtels...</p>
+        </div>
+      } @else if (featuredHotels.length === 0) {
+        <div class="no-hotels">
+          <p>Aucun hôtel disponible pour le moment.</p>
+          <a routerLink="/auth/register" class="btn btn-primary">Devenez hôtelier</a>
+        </div>
+      } @else {
+        <div class="hotels-grid">
+          @for (hotel of featuredHotels; track hotel._id) {
+            <div class="hotel-card">
+              <div class="hotel-image">
+                <img [src]="getHotelImage(hotel)" [alt]="hotel.name" />
+                <div class="hotel-stars">
+                  @for (star of getStars(hotel.stars); track $index) {
+                    <span>⭐</span>
+                  }
+                </div>
+              </div>
+              <div class="hotel-info">
+                <h3>{{ hotel.name }}</h3>
+                <p class="hotel-location">📍 {{ hotel.address.city }}, {{ hotel.address.country }}</p>
+                <p class="hotel-description">{{ hotel.description | slice:0:100 }}...</p>
+                <div class="hotel-footer">
+                  <div class="hotel-rating" *ngIf="hotel.rating > 0">
+                    <span class="rating-badge">{{ hotel.rating | number:'1.1-1' }}</span>
+                    <span class="rating-text">Excellent</span>
+                  </div>
+                  <a [routerLink]="['/hotels', hotel._id]" class="btn btn-outline">Voir détails</a>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        
+        <div class="view-all">
+          <a routerLink="/hotels" class="btn btn-primary btn-large">Voir tous les hôtels</a>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container">
+      <h2>Vous êtes propriétaire d'un hôtel ?</h2>
+      <p>Rejoignez notre plateforme et augmentez votre visibilité</p>
+      <a routerLink="/auth/register" class="btn btn-white">Devenir partenaire</a>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,234 @@
+.form-page {
+  min-height: calc(100vh - 70px);
+  background: #f5f7fa;
+  padding: 2rem 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+
+  .back-link {
+    display: inline-block;
+    color: #667eea;
+    text-decoration: none;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    &:hover { text-decoration: underline; }
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    color: #333;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 4rem;
+  background: #fff;
+  border-radius: 12px;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+}
+
+.form-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+
+  &:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-hint {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+
+  label {
+    display: block;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    &.error { border-color: #dc3545; }
+  }
+
+  textarea { resize: vertical; }
+
+  .error-message {
+    display: block;
+    margin-top: 0.5rem;
+    color: #dc3545;
+    font-size: 0.85rem;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+// Stars selector
+.stars-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .star-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0.4;
+
+    &:hover { border-color: #667eea; }
+    &.active {
+      opacity: 1;
+      border-color: #ffc107;
+      background: #fff9e6;
+    }
+  }
+
+  .stars-label {
+    margin-left: 1rem;
+    color: #666;
+    font-weight: 500;
+  }
+}
+
+// Amenities
+.amenities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .amenity-btn {
+    padding: 0.6rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 25px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+
+    &:hover { border-color: #667eea; }
+    &.active {
+      background: #667eea;
+      border-color: #667eea;
+      color: #fff;
+    }
+  }
+}
+
+// Actions
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+// Buttons
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+
+  &.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    &:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  &.btn-outline {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+    &:hover { background: #667eea; color: #fff; }
+  }
+
+  .spinner-sm {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  &.alert-error { background: #f8d7da; color: #721c24; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

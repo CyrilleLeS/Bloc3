@@ -1,0 +1,241 @@
+<div class="dashboard admin-dashboard">
+  <div class="container">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="welcome">
+        <h1>Administration 🛠️</h1>
+        <p>Gérez l'ensemble de la plateforme</p>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+      </div>
+    } @else {
+      <!-- Stats -->
+      @if (stats) {
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-icon">👥</span>
+            <div class="stat-info">
+              <span class="stat-value">{{ stats.users.total }}</span>
+              <span class="stat-label">Utilisateurs</span>
+            </div>
+            <div class="stat-detail">+{{ stats.users.newThisMonth }} ce mois</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🏨</span>
+            <div class="stat-info">
+              <span class="stat-value">{{ stats.hotels.total }}</span>
+              <span class="stat-label">Hôtels</span>
+            </div>
+            <div class="stat-detail">{{ stats.hotels.active }} actifs</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📋</span>
+            <div class="stat-info">
+              <span class="stat-value">{{ stats.bookings.total }}</span>
+              <span class="stat-label">Réservations</span>
+            </div>
+            <div class="stat-detail">{{ stats.bookings.pending }} en attente</div>
+          </div>
+          <div class="stat-card highlight">
+            <span class="stat-icon">💰</span>
+            <div class="stat-info">
+              <span class="stat-value">{{ stats.revenue.total | number:'1.0-0' }} €</span>
+              <span class="stat-label">Revenus totaux</span>
+            </div>
+            <div class="stat-detail">{{ stats.revenue.thisMonth | number:'1.0-0' }} € ce mois</div>
+          </div>
+        </div>
+      }
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'overview'"
+          (click)="activeTab = 'overview'"
+        >
+          📊 Aperçu
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'users'"
+          (click)="activeTab = 'users'"
+        >
+          👥 Utilisateurs
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'hotels'"
+          (click)="activeTab = 'hotels'"
+        >
+          🏨 Hôtels
+        </button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Overview -->
+        @if (activeTab === 'overview') {
+          <div class="overview-grid">
+            <div class="overview-card">
+              <h3>Répartition des utilisateurs</h3>
+              <div class="user-breakdown">
+                <div class="breakdown-item">
+                  <span class="label">Clients</span>
+                  <span class="value">{{ stats?.users?.clients || 0 }}</span>
+                </div>
+                <div class="breakdown-item">
+                  <span class="label">Hôteliers</span>
+                  <span class="value">{{ stats?.users?.hoteliers || 0 }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="overview-card">
+              <h3>Statut des réservations</h3>
+              <div class="booking-breakdown">
+                <div class="breakdown-item">
+                  <span class="dot pending"></span>
+                  <span class="label">En attente</span>
+                  <span class="value">{{ stats?.bookings?.pending || 0 }}</span>
+                </div>
+                <div class="breakdown-item">
+                  <span class="dot confirmed"></span>
+                  <span class="label">Confirmées</span>
+                  <span class="value">{{ stats?.bookings?.confirmed || 0 }}</span>
+                </div>
+                <div class="breakdown-item">
+                  <span class="dot cancelled"></span>
+                  <span class="label">Annulées</span>
+                  <span class="value">{{ stats?.bookings?.cancelled || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Users -->
+        @if (activeTab === 'users') {
+          <div class="section">
+            <div class="filters-bar">
+              <input 
+                type="text" 
+                placeholder="Rechercher un utilisateur..."
+                [(ngModel)]="userSearchTerm"
+                (input)="onUserFilterChange()"
+              />
+              <select [(ngModel)]="userRoleFilter" (change)="onUserFilterChange()">
+                <option value="">Tous les rôles</option>
+                <option value="client">Clients</option>
+                <option value="hotelier">Hôteliers</option>
+                <option value="admin">Admins</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Statut</th>
+                    <th>Inscrit le</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (user of users; track user._id) {
+                    <tr>
+                      <td>
+                        <div class="user-cell">
+                          <span class="avatar">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+                          <span>{{ user.firstName }} {{ user.lastName }}</span>
+                        </div>
+                      </td>
+                      <td>{{ user.email }}</td>
+                      <td>
+                        <select 
+                          [value]="user.role" 
+                          (change)="updateUserRole(user, $any($event.target).value)"
+                          class="role-select"
+                        >
+                          <option value="client">Client</option>
+                          <option value="hotelier">Hôtelier</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                      <td>
+                        <span class="status-dot" [class.active]="user.isActive"></span>
+                        {{ user.isActive ? 'Actif' : 'Inactif' }}
+                      </td>
+                      <td>{{ formatDate(user.createdAt) }}</td>
+                      <td>
+                        <button class="btn btn-sm" (click)="toggleUserStatus(user)">
+                          {{ user.isActive ? '🚫' : '✓' }}
+                        </button>
+                        <button class="btn btn-sm btn-danger" (click)="deleteUser(user)">
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- Hotels -->
+        @if (activeTab === 'hotels') {
+          <div class="section">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Hôtel</th>
+                    <th>Ville</th>
+                    <th>Étoiles</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (hotel of hotels; track hotel._id) {
+                    <tr>
+                      <td>
+                        <strong>{{ hotel.name }}</strong>
+                      </td>
+                      <td>{{ hotel.address.city }}</td>
+                      <td>
+                        @for (s of [1,2,3,4,5]; track s) {
+                          @if (s <= hotel.stars) { ⭐ }
+                        }
+                      </td>
+                      <td>
+                        <span class="status-dot" [class.active]="hotel.isActive"></span>
+                        {{ hotel.isActive ? 'Actif' : 'Inactif' }}
+                      </td>
+                      <td>
+                        <a [routerLink]="['/hotels', hotel._id]" class="btn btn-sm btn-outline">
+                          Voir
+                        </a>
+                        <button class="btn btn-sm btn-danger" (click)="deleteHotel(hotel)">
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

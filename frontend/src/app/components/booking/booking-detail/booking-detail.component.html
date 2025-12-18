@@ -1,0 +1,180 @@
+<div class="booking-detail-page">
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner-large"></div>
+      <p>Chargement de la réservation...</p>
+    </div>
+  } @else if (error || !booking) {
+    <div class="error-container">
+      <h2>😕 {{ error || 'Réservation non trouvée' }}</h2>
+      <a routerLink="/bookings" class="btn btn-primary">Mes réservations</a>
+    </div>
+  } @else {
+    <div class="container">
+      <!-- Header -->
+      <div class="booking-header">
+        <a routerLink="/bookings" class="back-link">← Retour aux réservations</a>
+        <div class="header-content">
+          <h1>Réservation #{{ booking._id | slice:-8 }}</h1>
+          <span class="status-badge" [ngClass]="getStatusClass(booking.status)">
+            {{ getStatusLabel(booking.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      @if (actionMessage) {
+        <div class="alert alert-success">{{ actionMessage }}</div>
+      }
+      @if (actionError) {
+        <div class="alert alert-error">{{ actionError }}</div>
+      }
+
+      <div class="booking-grid">
+        <!-- Détails principaux -->
+        <div class="main-content">
+          <!-- Hôtel -->
+          <div class="detail-card">
+            <div class="hotel-preview">
+              <img [src]="getHotelImage()" [alt]="getHotel()?.name" />
+              <div class="hotel-info">
+                <h2>{{ getHotel()?.name || 'Hôtel' }}</h2>
+                @if (getHotel()) {
+                  <p class="hotel-address">
+                    📍 {{ getHotel()!.address.street }}, {{ getHotel()!.address.city }}
+                  </p>
+                }
+                <p class="room-name">🛏️ {{ getRoom()?.name || 'Chambre' }}</p>
+                <span class="room-type">{{ getRoom()?.type }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dates et détails -->
+          <div class="detail-card">
+            <h3>📅 Détails du séjour</h3>
+            
+            <div class="dates-display">
+              <div class="date-block">
+                <span class="label">Arrivée</span>
+                <span class="date">{{ formatDate(booking.checkInDate) }}</span>
+              </div>
+              <div class="nights-block">
+                <span class="nights-number">{{ booking.numberOfNights }}</span>
+                <span class="nights-label">nuit{{ booking.numberOfNights > 1 ? 's' : '' }}</span>
+              </div>
+              <div class="date-block">
+                <span class="label">Départ</span>
+                <span class="date">{{ formatDate(booking.checkOutDate) }}</span>
+              </div>
+            </div>
+
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">👥 Voyageurs</span>
+                <span class="value">
+                  {{ booking.numberOfGuests.adults }} adulte{{ booking.numberOfGuests.adults > 1 ? 's' : '' }}
+                  @if (booking.numberOfGuests.children > 0) {
+                    , {{ booking.numberOfGuests.children }} enfant{{ booking.numberOfGuests.children > 1 ? 's' : '' }}
+                  }
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="label">📧 Email</span>
+                <span class="value">{{ booking.guestInfo.email }}</span>
+              </div>
+            </div>
+
+            @if (booking.specialRequests) {
+              <div class="special-requests">
+                <span class="label">💬 Demandes spéciales</span>
+                <p>{{ booking.specialRequests }}</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <!-- Prix -->
+          <div class="price-card">
+            <h3>Récapitulatif</h3>
+            
+            <div class="price-row">
+              <span>Prix par nuit</span>
+              <span>{{ booking.roomPrice | number:'1.0-0' }} €</span>
+            </div>
+            <div class="price-row">
+              <span>Nombre de nuits</span>
+              <span>{{ booking.numberOfNights }}</span>
+            </div>
+            <div class="price-row total">
+              <span>Total</span>
+              <span>{{ booking.totalPrice | number:'1.0-0' }} €</span>
+            </div>
+
+            <div class="payment-status" [class.paid]="booking.paymentStatus === 'paid'" [class.refunded]="booking.paymentStatus === 'refunded'">
+              {{ getPaymentStatusLabel(booking.paymentStatus) }}
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+              @if (canPay()) {
+                <button
+                  class="btn btn-primary btn-block"
+                  (click)="simulatePayment()"
+                  [disabled]="actionLoading"
+                >
+                  @if (actionLoading) {
+                    <span class="spinner"></span> Traitement...
+                  } @else {
+                    💳 Payer maintenant
+                  }
+                </button>
+              }
+
+              @if (canCancel()) {
+                <button
+                  class="btn btn-danger btn-block"
+                  (click)="cancelBooking()"
+                  [disabled]="actionLoading"
+                >
+                  Annuler la réservation
+                </button>
+              }
+
+              @if (booking.paymentStatus === 'paid' && booking.status !== 'cancelled') {
+                <button
+                  class="btn btn-outline btn-block"
+                  (click)="requestRefund()"
+                  [disabled]="actionLoading"
+                >
+                  Demander un remboursement
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Infos réservation -->
+          <div class="info-card">
+            <h3>Informations</h3>
+            <div class="info-row">
+              <span class="label">Réservé le</span>
+              <span class="value">{{ formatDate(booking.createdAt) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Référence</span>
+              <span class="value reference">#{{ booking._id | slice:-8 | uppercase }}</span>
+            </div>
+            @if (booking.stripePaymentIntentId) {
+              <div class="info-row">
+                <span class="label">ID Paiement</span>
+                <span class="value small">{{ booking.stripePaymentIntentId | slice:0:20 }}...</span>
+              </div>
+            }
+          </div>
+        </aside>
+      </div>
+    </div>
+  }
+</div>
