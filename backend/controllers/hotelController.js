@@ -1,41 +1,51 @@
 const Hotel = require('../models/Hotel');
 const { validationResult } = require('express-validator');
 
-//Ce controller gère tout ce qui est relatifs aux hôtels
-//Comme le filtrage, la création, supp, maj etc...
-//
-//
-// Récupérer tous les hôtels
-// GET /api/hotels
-// Public
+// Ce contrôleur gère toutes les opérations liées aux hôtels
+// Il fait le lien entre les requêtes de l'utilisateur et la base de données
+
+// --------------------------------------------------------------------------
+// LECTURE (PUBLIC)
+// --------------------------------------------------------------------------
+
+// Récupérer la liste des hôtels avec filtres et pagination
+// Route: GET /api/hotels
+// Accès: Public (tout le monde peut voir)
 exports.getHotels = async (req, res) => {
   try {
+    // On extrait les paramètres envoyés dans l'URL (query params)
     const { city, stars, minPrice, maxPrice, amenities, page = 1, limit = 10 } = req.query;
     
-    // Construire le filtre
-    const filter = { isActive: true };
+    // Construction de l'objet de recherche (filtre) pour MongoDB
+    const filter = { isActive: true }; // Par défaut, on ne cherche que les hôtels actifs
     
+    // Filtrage par ville (insensible à la casse)
     if (city) {
       filter['address.city'] = new RegExp(city, 'i');
     }
+    // Filtrage par étoiles
     if (stars) {
       filter.stars = parseInt(stars);
     }
+    // Filtrage par équipements (doit contenir tous les équipements demandés)
     if (amenities) {
       filter.amenities = { $all: amenities.split(',') };
     }
 
-    // Pagination
+    // Calcul pour la pagination (combien d'hôtels on saute)
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
+    // Requête vers la base de données
     const hotels = await Hotel.find(filter)
-      .populate('owner', 'firstName lastName')
-      .sort({ rating: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+      .populate('owner', 'firstName lastName') // On ajoute les infos simples du propriétaire
+      .sort({ rating: -1, createdAt: -1 })     // Tri par note (décroissant) puis par date
+      .skip(skip)                              // On saute les résultats des pages précédentes
+      .limit(parseInt(limit));                 // On limite le nombre de résultats
 
+    // Compte total pour savoir combien de pages il y a au total
     const total = await Hotel.countDocuments(filter);
 
+    // Réponse au client
     res.json({
       success: true,
       count: hotels.length,
@@ -45,19 +55,20 @@ exports.getHotels = async (req, res) => {
       hotels
     });
   } catch (error) {
+    // Gestion des erreurs serveur
     console.error('Erreur getHotels:', error);
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// Récupérer un hôtel par ID
-// GET /api/hotels/:id
-// Public
+// Récupérer un seul hôtel grâce à son ID
+// Route: GET /api/hotels/:id
+// Accès: Public
 exports.getHotel = async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id)
       .populate('owner', 'firstName lastName email')
-      .populate('rooms');
+      .populate('rooms'); // On récupère aussi la liste des chambres associées
 
     if (!hotel) {
       return res.status(404).json({ message: 'Hôtel non trouvé' });
@@ -70,19 +81,25 @@ exports.getHotel = async (req, res) => {
   }
 };
 
-// Créer un hôtel
-// POST /api/hotels
-// Private (hotelier, admin)
+// --------------------------------------------------------------------------
+// ÉCRITURE (HÔTELIERS / ADMINS)
+// --------------------------------------------------------------------------
+
+// Créer un nouvel hôtel
+// Route: POST /api/hotels
+// Accès: Privé (seulement les hôteliers et admins connectés)
 exports.createHotel = async (req, res) => {
   try {
+    // Vérification des erreurs de validation (ex: champs manquants)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    // Ajouter le propriétaire
+    // On associe l'hôtel à l'utilisateur qui le crée
     req.body.owner = req.user.id;
 
+    // Création en base de données
     const hotel = await Hotel.create(req.body);
 
     res.status(201).json({
@@ -97,8 +114,8 @@ exports.createHotel = async (req, res) => {
 };
 
 // Mettre à jour un hôtel
-// PUT /api/hotels/:id
-// Private (hotelier propriétaire, admin)
+// Route: PUT /api/hotels/:id
+// Accès: Privé (Propriétaire de l'hôtel ou Admin)
 exports.updateHotel = async (req, res) => {
   try {
     let hotel = await Hotel.findById(req.params.id);
@@ -107,16 +124,17 @@ exports.updateHotel = async (req, res) => {
       return res.status(404).json({ message: 'Hôtel non trouvé' });
     }
 
-    // Vérifier si l'utilisateur est le propriétaire ou admin
+    // Sécurité : On vérifie que c'est bien le propriétaire ou un admin qui modifie
     if (hotel.owner.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ 
         message: 'Vous n\'êtes pas autorisé à modifier cet hôtel' 
       });
     }
 
+    // Mise à jour
     hotel = await Hotel.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
+      new: true,         // Retourne l'objet modifié
+      runValidators: true // Vérifie que les données respectent le modèle (Schema)
     });
 
     res.json({
@@ -131,8 +149,8 @@ exports.updateHotel = async (req, res) => {
 };
 
 // Supprimer un hôtel
-// DELETE /api/hotels/:id
-// Private (hotelier propriétaire, admin)
+// Route: DELETE /api/hotels/:id
+// Accès: Privé (Propriétaire ou Admin)
 exports.deleteHotel = async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
@@ -141,13 +159,14 @@ exports.deleteHotel = async (req, res) => {
       return res.status(404).json({ message: 'Hôtel non trouvé' });
     }
 
-    // Vérifier si l'utilisateur est le propriétaire ou admin
+    // Sécurité : Vérification des droits
     if (hotel.owner.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ 
         message: 'Vous n\'êtes pas autorisé à supprimer cet hôtel' 
       });
     }
 
+    // Suppression
     await hotel.deleteOne();
 
     res.json({
@@ -160,11 +179,12 @@ exports.deleteHotel = async (req, res) => {
   }
 };
 
-// Récupérer les hôtels d'un hotelier
-// GET /api/hotels/my-hotels
-// Private (hotelier)
+// Récupérer la liste de "mes" hôtels (pour le dashboard de l'hôtelier)
+// Route: GET /api/hotels/my-hotels
+// Accès: Privé (Hôtelier)
 exports.getMyHotels = async (req, res) => {
   try {
+    // On cherche seulement les hôtels dont le "owner" est l'utilisateur connecté
     const hotels = await Hotel.find({ owner: req.user.id })
       .sort({ createdAt: -1 });
 

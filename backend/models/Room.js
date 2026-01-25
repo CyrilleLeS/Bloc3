@@ -1,11 +1,9 @@
-//Création du model pour les chambres, je fais appel à mongoose pour la bdd
 const mongoose = require('mongoose');
 
-//Création des valeurs d'une chambre comme son hôtel, son nom, sa description etc.. etc...
-//Nombre de caractères limités pour certains champs, obligations pour d'autres
-//timestamp aussi pour ce model
-
+// Schéma Chambre
+// Définit les caractéristiques d'une chambre d'hôtel
 const roomSchema = new mongoose.Schema({
+  // Lien vers l'hôtel auquel appartient cette chambre
   hotel: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Hotel',
@@ -13,7 +11,7 @@ const roomSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: [true, 'Le nom de la chambre est requis'],
+    required: [true, 'Le nom de la chambre est requis'], // Ex: "Chambre Vue Mer"
     trim: true,
     maxlength: [100, 'Le nom ne peut pas dépasser 100 caractères']
   },
@@ -24,6 +22,7 @@ const roomSchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'Le type de chambre est requis'],
+    // Liste fermée de types possibles
     enum: ['simple', 'double', 'twin', 'suite', 'familiale', 'deluxe']
   },
   price: {
@@ -31,6 +30,7 @@ const roomSchema = new mongoose.Schema({
     required: [true, 'Le prix est requis'],
     min: [0, 'Le prix ne peut pas être négatif']
   },
+  // Capacité d'accueil
   capacity: {
     adults: {
       type: Number,
@@ -44,7 +44,7 @@ const roomSchema = new mongoose.Schema({
     }
   },
   size: {
-    type: Number, // en m²
+    type: Number, // Surface en m²
     min: 0
   },
   bedType: {
@@ -52,8 +52,9 @@ const roomSchema = new mongoose.Schema({
     enum: ['simple', 'double', 'queen', 'king', 'twin', 'superpose']
   },
   images: [{
-    type: String
+    type: String // URLs des photos
   }],
+  // Équipements spécifiques à la chambre
   amenities: [{
     type: String,
     enum: [
@@ -72,6 +73,7 @@ const roomSchema = new mongoose.Schema({
       'canape'
     ]
   }],
+  // Nombre de chambres de ce type disponibles
   quantity: {
     type: Number,
     required: [true, 'La quantité est requise'],
@@ -83,10 +85,11 @@ const roomSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true // Dates auto (création/modif)
 });
 
-// Index pour les recherches
+// Index pour accélérer les recherches fréquentes
+// Ex: Trouver rapidement les chambres d'un hôtel spécifique
 roomSchema.index({ hotel: 1, type: 1, price: 1 });
 roomSchema.index({ isAvailable: 1 });
 

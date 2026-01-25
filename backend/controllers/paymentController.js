@@ -1,17 +1,21 @@
 const stripe = require('../config/stripe');
 const Booking = require('../models/Booking');
 
-//Ce controller gère le côté paiements
-//Il fera appel à la config stripe entre autres
+// Contrôleur Paiements
+// Gère l'intégration avec Stripe pour payer les réservations
 
-// Créer une intention de paiement
-// POST /api/payments/create-payment-intent
-// Private (client)
+// --------------------------------------------------------------------------
+// CRÉATION INTENTION DE PAIEMENT
+// --------------------------------------------------------------------------
+
+// Initialise le processus de paiement avec Stripe
+// Route: POST /api/payments/create-payment-intent
+// Accès: Privé (Client)
 exports.createPaymentIntent = async (req, res) => {
   try {
     const { bookingId } = req.body;
 
-    // Récupérer la réservation
+    // 1. Récupération de la réservation
     const booking = await Booking.findById(bookingId)
       .populate('hotel', 'name')
       .populate('room', 'name type');
@@ -20,28 +24,26 @@ exports.createPaymentIntent = async (req, res) => {
       return res.status(404).json({ message: 'Réservation non trouvée' });
     }
 
-    // Vérifier que l'utilisateur est le propriétaire de la réservation
+    // 2. Sécurité : C'est bien ma réservation ?
     if (booking.user.toString() !== req.user.id) {
       return res.status(403).json({ 
         message: 'Vous n\'êtes pas autorisé à payer cette réservation' 
       });
     }
 
-    // Vérifier que la réservation n'est pas déjà payée
+    // 3. Vérifications d'état
     if (booking.paymentStatus === 'paid') {
       return res.status(400).json({ message: 'Cette réservation est déjà payée' });
     }
-
-    // Vérifier que la réservation n'est pas annulée
     if (booking.status === 'cancelled') {
       return res.status(400).json({ message: 'Impossible de payer une réservation annulée' });
     }
 
-    // Créer l'intention de paiement Stripe
+    // 4. Appel à Stripe pour créer l'intention de paiement
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(booking.totalPrice * 100), // Stripe utilise les centimes
+      amount: Math.round(booking.totalPrice * 100), // Stripe fonctionne en centimes (10€ = 1000)
       currency: 'eur',
-      metadata: {
+      metadata: { // On attache des infos utiles pour le suivi
         bookingId: booking._id.toString(),
         hotelName: booking.hotel.name,
         roomName: booking.room.name,
@@ -50,10 +52,11 @@ exports.createPaymentIntent = async (req, res) => {
       description: `Réservation ${booking._id} - ${booking.hotel.name} - ${booking.room.name}`
     });
 
-    // Sauvegarder l'ID du PaymentIntent
+    // 5. On sauvegarde l'ID Stripe dans la réservation pour faire le lien plus tard
     booking.stripePaymentIntentId = paymentIntent.id;
     await booking.save();
 
+    // 6. On renvoie le "clientSecret" au frontend pour finaliser le paiement
     res.json({
       success: true,
       clientSecret: paymentIntent.client_secret,
@@ -67,59 +70,13 @@ exports.createPaymentIntent = async (req, res) => {
   }
 };
 
-// Confirmer le paiement (simulation)
-// POST /api/payments/confirm
-// Private (client)
-exports.confirmPayment = async (req, res) => {
-  try {
-    const { bookingId, paymentIntentId } = req.body;
+// --------------------------------------------------------------------------
+// SIMULATION (TEST)
+// --------------------------------------------------------------------------
 
-    const booking = await Booking.findById(bookingId);
-
-    if (!booking) {
-      return res.status(404).json({ message: 'Réservation non trouvée' });
-    }
-
-    if (booking.user.toString() !== req.user.id) {
-      return res.status(403).json({ 
-        message: 'Vous n\'êtes pas autorisé à confirmer ce paiement' 
-      });
-    }
-
-    // Vérifier le statut du paiement auprès de Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-    if (paymentIntent.status === 'succeeded') {
-      booking.paymentStatus = 'paid';
-      booking.status = 'confirmed';
-      await booking.save();
-
-      res.json({
-        success: true,
-        message: 'Paiement confirmé avec succès',
-        booking: {
-          id: booking._id,
-          status: booking.status,
-          paymentStatus: booking.paymentStatus,
-          totalPrice: booking.totalPrice
-        }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: 'Le paiement n\'a pas été effectué',
-        paymentStatus: paymentIntent.status
-      });
-    }
-  } catch (error) {
-    console.error('Erreur confirmPayment:', error);
-    res.status(500).json({ message: 'Erreur serveur', error: error.message });
-  }
-};
-
-// Simuler un paiement réussi (pour tests sans Stripe frontend)
-// POST /api/payments/simulate
-// Private (client)
+// Simule un paiement réussi (Utile pour tester sans carte bancaire réelle)
+// Route: POST /api/payments/simulate
+// Accès: Privé
 exports.simulatePayment = async (req, res) => {
   try {
     const { bookingId } = req.body;
@@ -132,6 +89,7 @@ exports.simulatePayment = async (req, res) => {
       return res.status(404).json({ message: 'Réservation non trouvée' });
     }
 
+    // Sécurité
     if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ 
         message: 'Vous n\'êtes pas autorisé à effectuer ce paiement' 
@@ -141,15 +99,14 @@ exports.simulatePayment = async (req, res) => {
     if (booking.paymentStatus === 'paid') {
       return res.status(400).json({ message: 'Cette réservation est déjà payée' });
     }
-
     if (booking.status === 'cancelled') {
       return res.status(400).json({ message: 'Impossible de payer une réservation annulée' });
     }
 
-    // Simuler le paiement réussi
+    // Mise à jour directe de la BDD comme si c'était payé
     booking.paymentStatus = 'paid';
     booking.status = 'confirmed';
-    booking.stripePaymentIntentId = `pi_simulated_${Date.now()}`;
+    booking.stripePaymentIntentId = `pi_simulated_${Date.now()}`; // Faux ID
     await booking.save();
 
     res.json({
@@ -159,9 +116,6 @@ exports.simulatePayment = async (req, res) => {
         id: booking._id,
         hotel: booking.hotel.name,
         room: booking.room.name,
-        checkInDate: booking.checkInDate,
-        checkOutDate: booking.checkOutDate,
-        numberOfNights: booking.numberOfNights,
         totalPrice: booking.totalPrice,
         status: booking.status,
         paymentStatus: booking.paymentStatus
@@ -173,9 +127,13 @@ exports.simulatePayment = async (req, res) => {
   }
 };
 
+// --------------------------------------------------------------------------
+// REMBOURSEMENT
+// --------------------------------------------------------------------------
+
 // Demander un remboursement
-// POST /api/payments/refund
-// Private (client, admin)
+// Route: POST /api/payments/refund
+// Accès: Privé
 exports.requestRefund = async (req, res) => {
   try {
     const { bookingId, reason } = req.body;
@@ -186,6 +144,7 @@ exports.requestRefund = async (req, res) => {
       return res.status(404).json({ message: 'Réservation non trouvée' });
     }
 
+    // Seul le client ou l'admin peut demander le remboursement
     const isOwner = booking.user.toString() === req.user.id;
     const isAdmin = req.user.role === 'admin';
 
@@ -201,7 +160,7 @@ exports.requestRefund = async (req, res) => {
       });
     }
 
-    // Si paiement réel Stripe, effectuer le remboursement
+    // Si c'était un vrai paiement Stripe, on déclenche le remboursement via l'API
     if (booking.stripePaymentIntentId && !booking.stripePaymentIntentId.startsWith('pi_simulated')) {
       await stripe.refunds.create({
         payment_intent: booking.stripePaymentIntentId,
@@ -209,7 +168,7 @@ exports.requestRefund = async (req, res) => {
       });
     }
 
-    // Mettre à jour la réservation
+    // Mise à jour BDD
     booking.paymentStatus = 'refunded';
     booking.status = 'cancelled';
     booking.cancelledAt = new Date();

@@ -2,36 +2,40 @@ const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const Hotel = require('../models/Hotel');
 
-//Ce controller gère le booking, donc fera appel aux différents models
-//Comme booking, room et hôtels
-//
-//
-//Créer une réservation
-//POST /api/bookings
-//Private (client)
+// Contrôleur Réservation (Booking)
+// Cœur du système : gère la prise de réservation, l'annulation et la consultation
+
+// --------------------------------------------------------------------------
+// CRÉATION
+// --------------------------------------------------------------------------
+
+// Créer une nouvelle réservation
+// Route: POST /api/bookings
+// Accès: Privé (Tout client connecté)
 exports.createBooking = async (req, res) => {
   try {
     const { room, checkInDate, checkOutDate, numberOfGuests, specialRequests, guestInfo } = req.body;
 
-    // Vérifier que la chambre existe
+    // 1. Récupérer les infos de la chambre
     const roomData = await Room.findById(room).populate('hotel');
     if (!roomData) {
       return res.status(404).json({ message: 'Chambre non trouvée' });
     }
 
+    // 2. Vérifier si la chambre est active
     if (!roomData.isAvailable) {
       return res.status(400).json({ message: 'Cette chambre n\'est pas disponible' });
     }
 
-    // Vérifier la disponibilité pour les dates
+    // 3. Vérifier la disponibilité pour les DATES choisies (pas de conflit)
     const isAvailable = await Booking.checkAvailability(room, checkInDate, checkOutDate);
     if (!isAvailable) {
       return res.status(400).json({ 
-        message: 'Cette chambre n\'est pas disponible pour les dates sélectionnées' 
+        message: 'Cette chambre n\'est pas disponible pour les dates sélectionnées'
       });
     }
 
-    // Vérifier la capacité
+    // 4. Vérifier la capacité (Nombre de personnes)
     const totalGuests = (numberOfGuests?.adults || 1) + (numberOfGuests?.children || 0);
     const roomCapacity = roomData.capacity.adults + roomData.capacity.children;
     if (totalGuests > roomCapacity) {
@@ -40,24 +44,24 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-    // Créer la réservation
+    // 5. Tout est bon : Création de la réservation
     const booking = await Booking.create({
-      user: req.user.id,
+      user: req.user.id,        // Le client connecté
       hotel: roomData.hotel._id,
       room,
       checkInDate,
       checkOutDate,
       numberOfGuests: numberOfGuests || { adults: 1, children: 0 },
-      roomPrice: roomData.price,
+      roomPrice: roomData.price, // On fixe le prix au moment de la résa
       specialRequests,
-      guestInfo: guestInfo || {
+      guestInfo: guestInfo || {  // Infos pré-remplies avec le profil
         firstName: req.user.firstName,
         lastName: req.user.lastName,
         email: req.user.email
       }
     });
 
-    // Populer les données pour la réponse
+    // 6. On renvoie la résa avec les détails lisibles (nom hôtel, chambre...)
     await booking.populate([
       { path: 'hotel', select: 'name address' },
       { path: 'room', select: 'name type price' }
@@ -74,22 +78,27 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-// Récupérer les réservations de l'utilisateur connecté
-// GET /api/bookings/my-bookings
-// Private (client)
+// --------------------------------------------------------------------------
+// LECTURE
+// --------------------------------------------------------------------------
+
+// "Mes Réservations" (Côté Client)
+// Route: GET /api/bookings/my-bookings
+// Accès: Privé (Client)
 exports.getMyBookings = async (req, res) => {
   try {
     const { status, page = 1, limit = 10 } = req.query;
     
+    // On filtre pour ne voir que SES propres réservations
     const filter = { user: req.user.id };
     if (status) filter.status = status;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const bookings = await Booking.find(filter)
-      .populate('hotel', 'name address images')
-      .populate('room', 'name type price images')
-      .sort({ createdAt: -1 })
+      .populate('hotel', 'name address images') // Affiche les infos de l\'hôtel
+      .populate('room', 'name type price images') // Affiche les infos de la chambre
+      .sort({ createdAt: -1 }) // Les plus récentes en premier
       .skip(skip)
       .limit(parseInt(limit));
 
@@ -109,14 +118,14 @@ exports.getMyBookings = async (req, res) => {
   }
 };
 
-// Récupérer les réservations d'un hôtel (pour hotelier)
-// GET /api/bookings/hotel/:hotelId
-// Private (hotelier, admin)
+// Réservations reçues (Côté Hôtelier)
+// Route: GET /api/bookings/hotel/:hotelId
+// Accès: Privé (Hôtelier proprio)
 exports.getHotelBookings = async (req, res) => {
   try {
     const { status, page = 1, limit = 10 } = req.query;
 
-    // Vérifier que l'hôtel appartient à l'utilisateur
+    // Sécurité : On vérifie que l\'hôtel appartient bien à celui qui demande
     const hotel = await Hotel.findById(req.params.hotelId);
     if (!hotel) {
       return res.status(404).json({ message: 'Hôtel non trouvé' });
@@ -134,9 +143,9 @@ exports.getHotelBookings = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const bookings = await Booking.find(filter)
-      .populate('user', 'firstName lastName email phone')
+      .populate('user', 'firstName lastName email phone') // L\'hôtelier a besoin des infos du client
       .populate('room', 'name type price')
-      .sort({ checkInDate: -1 })
+      .sort({ checkInDate: -1 }) // Tri par date d\'arrivée
       .skip(skip)
       .limit(parseInt(limit));
 
@@ -156,9 +165,9 @@ exports.getHotelBookings = async (req, res) => {
   }
 };
 
-// Récupérer une réservation par ID
-// GET /api/bookings/:id
-// Private
+// Détails d'une réservation unique
+// Route: GET /api/bookings/:id
+// Accès: Privé (Client concerné ou Hôtelier concerné)
 exports.getBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
@@ -170,10 +179,10 @@ exports.getBooking = async (req, res) => {
       return res.status(404).json({ message: 'Réservation non trouvée' });
     }
 
-    // Vérifier les droits d'accès
+    // Vérification des droits d\'accès complexe
     const hotel = await Hotel.findById(booking.hotel);
-    const isOwner = booking.user._id.toString() === req.user.id;
-    const isHotelOwner = hotel.owner.toString() === req.user.id;
+    const isOwner = booking.user._id.toString() === req.user.id; // C\'est mon booking ?
+    const isHotelOwner = hotel.owner.toString() === req.user.id; // C\'est mon hôtel ?
     const isAdmin = req.user.role === 'admin';
 
     if (!isOwner && !isHotelOwner && !isAdmin) {
@@ -189,9 +198,13 @@ exports.getBooking = async (req, res) => {
   }
 };
 
+// --------------------------------------------------------------------------
+// MODIFICATION / ANNULATION
+// --------------------------------------------------------------------------
+
 // Annuler une réservation
-// PUT /api/bookings/:id/cancel
-// Private
+// Route: PUT /api/bookings/:id/cancel
+// Accès: Privé
 exports.cancelBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -200,7 +213,7 @@ exports.cancelBooking = async (req, res) => {
       return res.status(404).json({ message: 'Réservation non trouvée' });
     }
 
-    // Vérifier les droits
+    // Droits : Client ou Hôtelier ou Admin
     const hotel = await Hotel.findById(booking.hotel);
     const isOwner = booking.user.toString() === req.user.id;
     const isHotelOwner = hotel.owner.toString() === req.user.id;
@@ -212,21 +225,20 @@ exports.cancelBooking = async (req, res) => {
       });
     }
 
-    // Vérifier si l'annulation est possible
+    // Règles d\'annulation
     if (booking.status === 'cancelled') {
       return res.status(400).json({ message: 'Cette réservation est déjà annulée' });
     }
-
     if (booking.status === 'completed') {
       return res.status(400).json({ message: 'Impossible d\'annuler une réservation terminée' });
     }
 
-    // Annuler la réservation
+    // Mise à jour
     booking.status = 'cancelled';
     booking.cancelledAt = new Date();
     booking.cancellationReason = req.body.reason || 'Annulée par l\'utilisateur';
     
-    // Si paiement effectué, marquer pour remboursement
+    // Si c\'était payé, on passe en statut "remboursé" (logique simplifiée)
     if (booking.paymentStatus === 'paid') {
       booking.paymentStatus = 'refunded';
     }
@@ -244,9 +256,9 @@ exports.cancelBooking = async (req, res) => {
   }
 };
 
-// Mettre à jour le statut d'une réservation (hotelier/admin)
-// PUT /api/bookings/:id/status
-// Private (hotelier, admin)
+// Mettre à jour le statut (ex: confirmer manuellement)
+// Route: PUT /api/bookings/:id/status
+// Accès: Privé (Hôtelier)
 exports.updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -256,7 +268,7 @@ exports.updateBookingStatus = async (req, res) => {
       return res.status(404).json({ message: 'Réservation non trouvée' });
     }
 
-    // Vérifier les droits
+    // Sécurité : Seul l\'hôtelier décide
     const hotel = await Hotel.findById(booking.hotel);
     if (hotel.owner.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ 
@@ -278,9 +290,9 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
-// Vérifier la disponibilité d'une chambre
-// GET /api/bookings/check-availability
-// Public
+// Vérifier la disponibilité (Utilitaire public)
+// Route: GET /api/bookings/check-availability
+// Accès: Public
 exports.checkAvailability = async (req, res) => {
   try {
     const { roomId, checkIn, checkOut } = req.query;

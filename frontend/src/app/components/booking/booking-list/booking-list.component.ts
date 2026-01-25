@@ -5,6 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../../services/booking.service';
 import { Booking, Hotel, Room } from '../../../models';
 
+// Composant Liste des Réservations
+// Permet au client de voir tout son historique de réservations
+
 @Component({
   selector: 'app-booking-list',
   standalone: true,
@@ -17,7 +20,7 @@ export class BookingListComponent implements OnInit {
   loading = true;
   error = '';
 
-  // Filtres
+  // Filtres d'affichage
   selectedStatus = '';
   statuses = [
     { value: '', label: 'Tous les statuts' },
@@ -38,6 +41,7 @@ export class BookingListComponent implements OnInit {
     this.loadBookings();
   }
 
+  // Charge les réservations depuis le serveur
   loadBookings(): void {
     this.loading = true;
     this.error = '';
@@ -47,6 +51,7 @@ export class BookingListComponent implements OnInit {
       limit: 10
     };
 
+    // Ajout du filtre de statut si sélectionné
     if (this.selectedStatus) {
       filters.status = this.selectedStatus;
     }
@@ -65,11 +70,13 @@ export class BookingListComponent implements OnInit {
     });
   }
 
+  // Appelé quand on change le filtre "Statut"
   onStatusChange(): void {
-    this.currentPage = 1;
-    this.loadBookings();
+    this.currentPage = 1; // Retour page 1
+    this.loadBookings();  // Recharger
   }
 
+  // Navigation entre les pages
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -77,6 +84,8 @@ export class BookingListComponent implements OnInit {
     }
   }
 
+  // Helpers pour l'affichage (récupération sécurisée des propriétés imbriquées)
+  
   getHotelName(booking: Booking): string {
     if (typeof booking.hotel === 'object') {
       return (booking.hotel as Hotel).name;
@@ -101,6 +110,7 @@ export class BookingListComponent implements OnInit {
     return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400';
   }
 
+  // Traduction des statuts pour l'affichage
   getStatusLabel(status: string): string {
     const labels: { [key: string]: string } = {
       pending: 'En attente',
@@ -111,12 +121,13 @@ export class BookingListComponent implements OnInit {
     return labels[status] || status;
   }
 
+  // Couleurs des badges de statut
   getStatusClass(status: string): string {
     const classes: { [key: string]: string } = {
-      pending: 'badge-warning',
-      confirmed: 'badge-success',
-      cancelled: 'badge-danger',
-      completed: 'badge-info'
+      pending: 'badge-warning',  // Jaune
+      confirmed: 'badge-success', // Vert
+      cancelled: 'badge-danger',  // Rouge
+      completed: 'badge-info'     // Bleu
     };
     return classes[status] || 'badge-secondary';
   }
@@ -131,6 +142,7 @@ export class BookingListComponent implements OnInit {
     return labels[status] || status;
   }
 
+  // Formatage de date lisible
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -139,6 +151,7 @@ export class BookingListComponent implements OnInit {
     });
   }
 
+  // Génère la liste des pages [1, 2, 3...]
   getPages(): number[] {
     const pages: number[] = [];
     const start = Math.max(1, this.currentPage - 2);

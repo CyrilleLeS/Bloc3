@@ -1,59 +1,88 @@
-# Frontend
+# ResaHotel
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.10.
+ResaHotel est une plateforme complète de réservation d'hôtels qui met en relation les voyageurs avec les hôtels. Elle offre des fonctionnalités pour rechercher des hôtels, réserver des chambres et gérer les réservations tant pour les clients que pour les administrateurs d'hôtels.
 
-## Development server
+## Fonctionnalités
 
-To start a local development server, run:
+-   **Recherche et Filtres :** Trouvez des hôtels par ville, nombre d'étoiles et équipements.
+-   **Système de Réservation :** Interface de réservation facile à utiliser avec sélection de chambre.
+-   **Comptes Utilisateurs :** Inscription et connexion sécurisées pour les utilisateurs.
+-   **Tableau de Bord Admin :** Gérez les hôtels, les chambres et les réservations (pour les hôteliers/administrateurs).
+-   **Design Responsive :** Optimisé pour les appareils de bureau et mobiles.
+
+## Stack Technique
+
+-   **Frontend :** Angular (avec Standalone Components)
+-   **Backend :** Node.js, Express (basé sur la configuration standard)
+-   **Base de données :** MongoDB (impliqué)
+-   **Styles :** SCSS
+
+## Pour Commencer
+
+### Prérequis
+
+-   Node.js (v18 ou supérieur recommandé)
+-   npm (v9 ou supérieur recommandé)
+-   Angular CLI (`npm install -g @angular/cli`)
+
+### Installation
+
+1.  Clonez le dépôt :
+    ```bash
+    git clone <url-du-depot>
+    cd resahotel
+    ```
+
+2.  Installez les dépendances frontend :
+    ```bash
+    cd frontend
+    npm install
+    ```
+
+3.  Installez les dépendances backend :
+    ```bash
+    cd ../backend
+    npm install
+    ```
+
+### Lancer l'Application
+
+1.  **Démarrer le Backend :**
+    Naviguez dans le dossier backend et démarrez le serveur :
+    ```bash
+    cd backend
+    npm start
+    ```
+
+2.  **Démarrer le Frontend :**
+    Naviguez dans le dossier frontend et démarrez le serveur de développement Angular :
+    ```bash
+    cd frontend
+    ng serve
+    ```
+    Ouvrez votre navigateur et naviguez vers `http://localhost:4200/`.
+
+## Lancer les Tests
+
+Pour exécuter les tests unitaires du frontend :
 
 ```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
+cd frontend
 ng test
 ```
 
-## Running end-to-end tests
+## Structure du Projet
 
-For end-to-end (e2e) testing, run:
+-   `frontend/` : Code source de l'application Angular.
+    -   `src/app/components/` : Composants UI (Liste d'hôtels, Formulaire de réservation, etc.).
+    -   `src/app/services/` : Services pour la communication API.
+    -   `src/app/models/` : Interfaces/modèles TypeScript.
+-   `backend/` : Code de l'API côté serveur.
 
-```bash
-ng e2e
-```
+## Contribuer
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+1.  Forkez le dépôt.
+2.  Créez votre branche de fonctionnalité (`git checkout -b feature/ma-super-fonctionnalite`).
+3.  Committez vos changements (`git commit -m 'Ajout d'une super fonctionnalité'`).
+4.  Pushez vers la branche (`git push origin feature/ma-super-fonctionnalite`).
+5.  Ouvrez une Pull Request.

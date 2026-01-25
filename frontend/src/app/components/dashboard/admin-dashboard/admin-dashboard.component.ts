@@ -6,6 +6,10 @@ import { UserService } from '../../../services/user.service';
 import { HotelService } from '../../../services/hotel.service';
 import { User, Hotel, DashboardStats } from '../../../models';
 
+// Tableau de Bord Administrateur
+// Vue d'ensemble complète du système (Super-Admin)
+// Permet de gérer les utilisateurs, les hôtels et de voir les stats globales.
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -14,14 +18,14 @@ import { User, Hotel, DashboardStats } from '../../../models';
   styleUrl: './admin-dashboard.component.scss'
 })
 export class AdminDashboardComponent implements OnInit {
-  stats: DashboardStats | null = null;
-  users: User[] = [];
-  hotels: Hotel[] = [];
+  stats: DashboardStats | null = null; // Stats globales (KPIs)
+  users: User[] = [];   // Liste des utilisateurs
+  hotels: Hotel[] = []; // Liste des hôtels
   
   loading = true;
-  activeTab = 'overview';
+  activeTab = 'overview'; // Onglet actif (Vue d'ensemble / Utilisateurs / Hôtels)
   
-  // Filtres utilisateurs
+  // Filtres pour la liste des utilisateurs
   userRoleFilter = '';
   userSearchTerm = '';
 
@@ -31,11 +35,13 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Chargement parallèle des données
     this.loadDashboardStats();
     this.loadUsers();
     this.loadHotels();
   }
 
+  // Charge les KPIs (Total utilisateurs, Revenus, etc.)
   loadDashboardStats(): void {
     this.userService.getDashboardStats().subscribe({
       next: (res) => {
@@ -48,8 +54,9 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // Charge la liste des utilisateurs avec filtres
   loadUsers(): void {
-    const filters: any = { limit: 20 };
+    const filters: any = { limit: 20 }; // On limite à 20 pour éviter de surcharger la page
     if (this.userRoleFilter) filters.role = this.userRoleFilter;
     if (this.userSearchTerm) filters.search = this.userSearchTerm;
 
@@ -60,6 +67,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // Charge la liste des hôtels
   loadHotels(): void {
     this.hotelService.getHotels({ limit: 20 }).subscribe({
       next: (res) => {
@@ -68,10 +76,12 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // Appelé quand on change les filtres utilisateurs
   onUserFilterChange(): void {
     this.loadUsers();
   }
 
+  // Changer le rôle d'un utilisateur (ex: promouvoir un Client en Hôtelier)
   updateUserRole(user: User, newRole: string): void {
     this.userService.updateUser(user._id, { role: newRole } as any).subscribe({
       next: (res) => {
@@ -80,6 +90,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // Activer/Désactiver un compte utilisateur (Ban)
   toggleUserStatus(user: User): void {
     this.userService.updateUser(user._id, { isActive: !user.isActive } as any).subscribe({
       next: (res) => {
@@ -88,6 +99,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // Supprimer définitivement un utilisateur
   deleteUser(user: User): void {
     if (!confirm(`Supprimer l'utilisateur ${user.firstName} ${user.lastName} ?`)) {
       return;
@@ -100,6 +112,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // Supprimer un hôtel (Administration)
   deleteHotel(hotel: Hotel): void {
     if (!confirm(`Supprimer l'hôtel "${hotel.name}" ?`)) {
       return;
@@ -116,6 +129,7 @@ export class AdminDashboardComponent implements OnInit {
     return new Date(dateString).toLocaleDateString('fr-FR');
   }
 
+  // Labels pour l'affichage des rôles
   getRoleLabel(role: string): string {
     const labels: { [key: string]: string } = {
       client: 'Client',
@@ -125,11 +139,12 @@ export class AdminDashboardComponent implements OnInit {
     return labels[role] || role;
   }
 
+  // Couleurs des badges de rôle
   getRoleClass(role: string): string {
     const classes: { [key: string]: string } = {
-      client: 'badge-info',
-      hotelier: 'badge-warning',
-      admin: 'badge-danger'
+      client: 'badge-info',    // Bleu
+      hotelier: 'badge-warning', // Jaune
+      admin: 'badge-danger'    // Rouge
     };
     return classes[role] || 'badge-secondary';
   }

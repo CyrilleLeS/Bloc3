@@ -2,6 +2,10 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
+// Composant Pied de Page (Footer)
+// Affiche les liens utiles, les infos de contact et le copyright
+// Présent sur toutes les pages en bas
+
 @Component({
   selector: 'app-footer',
   standalone: true,
@@ -9,11 +13,13 @@ import { RouterModule } from '@angular/router';
   template: `
     <footer class="footer">
       <div class="footer-container">
+        <!-- Section À Propos -->
         <div class="footer-section">
           <h3>🏨 HotelBooking</h3>
           <p>Trouvez et réservez les meilleurs hôtels au meilleur prix.</p>
         </div>
         
+        <!-- Section Liens Rapides -->
         <div class="footer-section">
           <h4>Navigation</h4>
           <a routerLink="/">Accueil</a>
@@ -22,6 +28,7 @@ import { RouterModule } from '@angular/router';
           <a routerLink="/auth/register">Inscription</a>
         </div>
         
+        <!-- Section Contact -->
         <div class="footer-section">
           <h4>Contact</h4>
           <p>📧 contact&#64;hotelbooking.com</p>
@@ -30,6 +37,7 @@ import { RouterModule } from '@angular/router';
         </div>
       </div>
       
+      <!-- Copyright -->
       <div class="footer-bottom">
         <p>&copy; {{ currentYear }} HotelBooking. Tous droits réservés.</p>
       </div>
@@ -40,7 +48,7 @@ import { RouterModule } from '@angular/router';
       background: #2c3e50;
       color: #fff;
       padding: 3rem 1rem 1rem;
-      margin-top: auto;
+      margin-top: auto; /* Pousse le footer tout en bas si la page est courte */
 
       .footer-container {
         max-width: 1200px;
@@ -97,5 +105,5 @@ import { RouterModule } from '@angular/router';
   `]
 })
 export class FooterComponent {
-  currentYear = new Date().getFullYear();
+  currentYear = new Date().getFullYear(); // Année dynamique
 }

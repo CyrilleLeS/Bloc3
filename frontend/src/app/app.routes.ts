@@ -2,14 +2,17 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
 
+// Définition des Routes de l'application
+// C'est ici qu'on associe une URL (ex: /hotels) à un Composant (ex: HotelListComponent)
+
 export const routes: Routes = [
-  // Page d'accueil
+  // Page d'accueil (Route par défaut)
   {
     path: '',
     loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)
   },
 
-  // Auth routes
+  // Routes d'Authentification (Login / Register)
   {
     path: 'auth/login',
     loadComponent: () => import('./components/auth/login/login.component').then(m => m.LoginComponent)
@@ -19,23 +22,23 @@ export const routes: Routes = [
     loadComponent: () => import('./components/auth/register/register.component').then(m => m.RegisterComponent)
   },
 
-  // Hotels routes (public)
+  // Routes Hôtels (Public - Tout le monde peut voir)
   {
     path: 'hotels',
     loadComponent: () => import('./components/hotel/hotel-list/hotel-list.component').then(m => m.HotelListComponent)
   },
   {
-    path: 'hotels/:id',
+    path: 'hotels/:id', // :id est un paramètre dynamique
     loadComponent: () => import('./components/hotel/hotel-detail/hotel-detail.component').then(m => m.HotelDetailComponent)
   },
 
-  // Amadeus search (public)
+  // Recherche Amadeus (Vols/Hôtels API Externe)
   {
     path: 'explore',
     loadComponent: () => import('./components/amadeus/amadeus-search.component').then(m => m.AmadeusSearchComponent)
   },
 
-  // Booking routes (client)
+  // Routes Réservations (Booking) - Protégées par AuthGuard (Il faut être connecté)
   {
     path: 'bookings',
     loadComponent: () => import('./components/booking/booking-list/booking-list.component').then(m => m.BookingListComponent),
@@ -52,7 +55,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
 
-  // Dashboard Client
+  // Tableau de Bord Client (Protégé + Rôle Client)
   {
     path: 'dashboard/client',
     loadComponent: () => import('./components/dashboard/client-dashboard/client-dashboard.component').then(m => m.ClientDashboardComponent),
@@ -60,13 +63,14 @@ export const routes: Routes = [
     data: { roles: ['client'] }
   },
 
-  // Dashboard Hotelier
+  // Tableau de Bord Hôtelier (Protégé + Rôle Hotelier)
   {
     path: 'dashboard/hotelier',
     loadComponent: () => import('./components/dashboard/hotelier-dashboard/hotelier-dashboard.component').then(m => m.HotelierDashboardComponent),
     canActivate: [RoleGuard],
     data: { roles: ['hotelier'] }
   },
+  // Sous-pages Hôtelier (Création/Édition d'hôtels et chambres)
   {
     path: 'dashboard/hotelier/hotels/new',
     loadComponent: () => import('./components/dashboard/hotelier-dashboard/hotel-form/hotel-form.component').then(m => m.HotelFormComponent),
@@ -86,7 +90,7 @@ export const routes: Routes = [
     data: { roles: ['hotelier'] }
   },
 
-  // Dashboard Admin
+  // Tableau de Bord Admin (Protégé + Rôle Admin)
   {
     path: 'dashboard/admin',
     loadComponent: () => import('./components/dashboard/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
@@ -94,14 +98,14 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
 
-  // Profile
+  // Profil Utilisateur
   {
     path: 'profile',
     loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [AuthGuard]
   },
 
-  // 404
+  // Page 404 (Route "Wildcard") - Doit toujours être en dernier !
   {
     path: '**',
     loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent)

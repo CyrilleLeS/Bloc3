@@ -1,14 +1,17 @@
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
-// Controller qui gère l'Inscription d'un utilisateur
-// La route sera --> POST /api/auth/register
-// L'acces sera Public
-// On fait appel au model user et à express-validator
-// le reste fonctionnera sur le même principe
+// Contrôleur d'Authentification
+// Gère tout ce qui concerne l'inscription, la connexion et le profil utilisateur
+
+// --------------------------------------------------------------------------
+// INSCRIPTION
+// --------------------------------------------------------------------------
+// Route: POST /api/auth/register
+// Accès: Public
 exports.register = async (req, res) => {
   try {
-    // Vérifier les erreurs de validation
+    // 1. Vérification des erreurs de validation (format email, mdp court, etc.)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -16,7 +19,7 @@ exports.register = async (req, res) => {
 
     const { firstName, lastName, email, password, role, phone } = req.body;
 
-    // Vérifier si l'utilisateur existe déjà
+    // 2. On vérifie si l'email est déjà pris
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ 
@@ -24,19 +27,20 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Créer l'utilisateur
+    // 3. Création du nouvel utilisateur en base de données
     const user = await User.create({
       firstName,
       lastName,
       email,
-      password,
-      role: role || 'client',
+      password, // Sera automatiquement crypté grâce au modèle User
+      role: role || 'client', // Par défaut, c'est un client
       phone
     });
 
-    // Générer le token
+    // 4. Génération immédiate d'un token pour qu'il soit connecté direct
     const token = user.generateAuthToken();
 
+    // 5. Réponse succès
     res.status(201).json({
       success: true,
       message: 'Inscription réussie',
@@ -58,11 +62,14 @@ exports.register = async (req, res) => {
   }
 };
 
-//Connexion d'un utilisateur
-//POST /api/auth/login
-//Public
+// --------------------------------------------------------------------------
+// CONNEXION
+// --------------------------------------------------------------------------
+// Route: POST /api/auth/login
+// Accès: Public
 exports.login = async (req, res) => {
   try {
+    // Vérif erreurs validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -70,22 +77,25 @@ exports.login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Vérifier si l'utilisateur existe (inclure le password)
+    // 1. On cherche l'utilisateur par son email
+    // .select('+password') est nécessaire car par défaut le mdp est masqué
     const user = await User.findOne({ email }).select('+password');
+    
+    // Si utilisateur pas trouvé
     if (!user) {
       return res.status(401).json({ 
         message: 'Email ou mot de passe incorrect.' 
       });
     }
 
-    // Vérifier si le compte est actif
+    // 2. Vérif si le compte est actif
     if (!user.isActive) {
       return res.status(401).json({ 
         message: 'Ce compte a été désactivé.' 
       });
     }
 
-    // Vérifier le mot de passe
+    // 3. Vérification du mot de passe (comparaison hash)
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ 
@@ -93,7 +103,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Générer le token
+    // 4. Tout est bon, on génère le token
     const token = user.generateAuthToken();
 
     res.json({
@@ -117,11 +127,14 @@ exports.login = async (req, res) => {
   }
 };
 
-//Obtenir le profil de l'utilisateur connecté
-//GET /api/auth/profile
-//Private
+// --------------------------------------------------------------------------
+// PROFIL UTILISATEUR
+// --------------------------------------------------------------------------
+// Route: GET /api/auth/profile
+// Accès: Privé (Connecté)
 exports.getProfile = async (req, res) => {
   try {
+    // req.user.id vient du middleware "protect" qui a décodé le token
     const user = await User.findById(req.user.id);
     
     res.json({
@@ -144,17 +157,18 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-//Mettre à jour le profil
-//PUT /api/auth/profile
-//Private
+// Mettre à jour son propre profil
+// Route: PUT /api/auth/profile
+// Accès: Privé
 exports.updateProfile = async (req, res) => {
   try {
     const { firstName, lastName, phone } = req.body;
 
+    // Mise à jour des champs autorisés
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { firstName, lastName, phone },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true } // new: true renvoie l'objet mis à jour
     );
 
     res.json({

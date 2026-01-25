@@ -4,56 +4,62 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const helmet = require('helmet');
 
-// Charger les variables d'environnement
+// 1. Chargement des configurations
+// On lit les variables cachées dans le fichier .env (comme les mots de passe)
 dotenv.config();
 
-// Connexion à la base de données
+// 2. Connexion à la Base de Données (MongoDB)
 connectDB();
 
-// Initialiser Express
+// 3. Initialisation de l'application Express
 const app = express();
 
-//sécurité en plus contre diverses attaques courantes
+// 4. Middleware de Sécurité et Utilitaires
+// Helmet ajoute des en-têtes HTTP pour sécuriser l'app contre des attaques courantes
 app.use(helmet());
+// CORS permet à notre frontend (sur un autre port) de communiquer avec ce backend
 app.use(cors());
-
-// Middleware
-app.use(cors());
+// Permet de lire les données envoyées en JSON dans le corps des requêtes (req.body)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Route de test
+// 5. Route de base (Test)
+// Juste pour vérifier que le serveur répond bien
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Bienvenue sur l\'API Hotel Booking',
     version: '1.0.0'
   });
 });
 
-// Routes API
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/hotels', require('./routes/hotels'));
-app.use('/api/rooms', require('./routes/rooms'));
-app.use('/api/bookings', require('./routes/bookings'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/amadeus', require('./routes/amadeus'));
+// 6. Définition des Routes Principales de l'API
+// Chaque ligne relie une URL (ex: /api/auth) à un fichier de routes spécifique
+app.use('/api/auth', require('./routes/auth'));       // Authentification
+app.use('/api/hotels', require('./routes/hotels'));   // Gestion des hôtels
+app.use('/api/rooms', require('./routes/rooms'));     // Gestion des chambres
+app.use('/api/bookings', require('./routes/bookings')); // Réservations
+app.use('/api/payments', require('./routes/payments')); // Paiements
+app.use('/api/users', require('./routes/users'));     // Gestion des utilisateurs
+app.use('/api/amadeus', require('./routes/amadeus')); // API externe Amadeus (Vols/Hôtels)
 
-// Gestion des erreurs 404
+// 7. Gestion des erreurs 404 (Page non trouvée)
+// Si aucune route au-dessus ne correspond, on tombe ici
 app.use((req, res, next) => {
   res.status(404).json({ message: 'Route non trouvée' });
 });
 
-// Gestion globale des erreurs
+// 8. Gestion globale des erreurs
+// Attrape toutes les erreurs non gérées ailleurs pour éviter que le serveur plante
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     message: 'Erreur serveur',
+    // En développement, on affiche les détails de l'erreur pour aider à débugger
     error: process.env.NODE_ENV === 'development' ? err.message : {}
   });
 });
 
-// Démarrer le serveur
+// 9. Démarrage du Serveur
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);

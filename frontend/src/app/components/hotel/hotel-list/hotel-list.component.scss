@@ -380,6 +380,19 @@
   }
 }
 
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
