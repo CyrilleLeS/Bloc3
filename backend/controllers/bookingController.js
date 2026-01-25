@@ -1,7 +1,6 @@
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const Hotel = require('../models/Hotel');
-const { validationResult } = require('express-validator');
 
 //Ce controller gère le booking, donc fera appel aux différents models
 //Comme booking, room et hôtels
@@ -12,11 +11,6 @@ const { validationResult } = require('express-validator');
 //Private (client)
 exports.createBooking = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const { room, checkInDate, checkOutDate, numberOfGuests, specialRequests, guestInfo } = req.body;
 
     // Vérifier que la chambre existe

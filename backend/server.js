@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const helmet = require('helmet');
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -11,6 +12,10 @@ connectDB();
 
 // Initialiser Express
 const app = express();
+
+//sécurité en plus contre diverses attaques courantes
+app.use(helmet());
+app.use(cors());
 
 // Middleware
 app.use(cors());

@@ -17,6 +17,11 @@ interface DecodedToken {
   exp: number;
 }
 
+interface UserProfileResponse {
+  success: boolean;
+  user: User;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -35,7 +40,7 @@ export class AuthService {
   constructor(private http: HttpClient) {
   }
 
-public loadUserFromToken(): Observable<any> {
+public loadUserFromToken(): Observable<UserProfileResponse | null> {
     const token = this.getToken();
     
     if (token && !this.isTokenExpired(token)) {

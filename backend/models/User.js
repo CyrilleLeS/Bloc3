@@ -20,13 +20,17 @@ const userSchema = new mongoose.Schema({
     trim: true,
     maxlength: [50, 'Le nom ne peut pas dépasser 50 caractères']
   },
-  email: {
+email: {
     type: String,
     required: [true, 'L\'email est requis'],
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\S+@\S+\.\S+$/, 'Veuillez fournir un email valide']
+    // La regex ci-dessous autorise .com, .fr, .net, .org, .be, .ch, .edu et .gov
+    match: [
+      /^\S+@\S+\.(com|fr|net|org|be|ch|edu|gov)$/i, 
+      'Veuillez fournir un email valide se terminant par une extension autorisée (.com, .fr, .net, .org, .be, .ch, .edu, .gov)'
+    ]
   },
   password: {
     type: String,

@@ -3,6 +3,7 @@ const router = express.Router();
 const { body } = require('express-validator');
 const bookingController = require('../controllers/bookingController');
 const { protect, authorize } = require('../middleware/auth');
+const { validate } = require('../middleware/validator');
 
 // Validation pour création de réservation
 const bookingValidation = [
@@ -27,11 +28,25 @@ const bookingValidation = [
 router.get('/check-availability', bookingController.checkAvailability);
 
 // Routes protégées (client)
-router.post(
-  '/',
+router.post('/',
   protect,
-  authorize('client', 'admin'),
-  bookingValidation,
+  [
+    body('room').isMongoId().withMessage('Identifiant de chambre invalide'),
+    body('checkInDate')
+      .isISO8601().withMessage('Date d\'arrivée invalide')
+      .custom((value) => new Date(value) >= new Date().setHours(0,0,0,0))
+      .withMessage('La date d\'arrivée ne peut pas être dans le passé'),
+    body('checkOutDate')
+      .isISO8601().withMessage('Date de départ invalide')
+      .custom((value, { req }) => new Date(value) > new Date(req.body.checkInDate))
+      .withMessage('La date de départ doit être après la date d\'arrivée'),
+    body('numberOfGuests.adults')
+      .isInt({ min: 1 }).withMessage('Il faut au moins 1 adulte'),
+    body('numberOfGuests.children')
+      .optional()
+      .isInt({ min: 0 }).withMessage('Le nombre d\'enfants ne peut pas être négatif'),
+    validate // Appel du middleware pour bloquer la requête si une règle échoue
+  ],
   bookingController.createBooking
 );
 
