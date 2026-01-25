@@ -5,6 +5,9 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models';
 
+// Composant Profil Utilisateur
+// Permet de voir et modifier ses informations personnelles
+
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -15,15 +18,17 @@ import { User } from '../../models';
 export class ProfileComponent implements OnInit {
   currentUser: User | null = null;
   profileForm: FormGroup;
-  loading = true;
-  saving = false;
-  message = '';
-  error = '';
+  
+  loading = true; // Chargement des infos
+  saving = false; // Sauvegarde en cours
+  message = '';   // Message de succès
+  error = '';     // Message d'erreur
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService
   ) {
+    // Initialisation du formulaire
     this.profileForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.maxLength(50)]],
       lastName: ['', [Validators.required, Validators.maxLength(50)]],
@@ -35,10 +40,12 @@ export class ProfileComponent implements OnInit {
     this.loadProfile();
   }
 
+  // Charge les données actuelles de l'utilisateur
   loadProfile(): void {
     this.authService.getProfile().subscribe({
       next: (res) => {
         this.currentUser = res.user;
+        // On pré-remplit le formulaire
         this.profileForm.patchValue({
           firstName: res.user.firstName,
           lastName: res.user.lastName,
@@ -53,6 +60,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Soumission du formulaire
   onSubmit(): void {
     if (this.profileForm.invalid) return;
 
@@ -60,11 +68,12 @@ export class ProfileComponent implements OnInit {
     this.message = '';
     this.error = '';
 
+    // Appel API de mise à jour
     this.authService.updateProfile(this.profileForm.value).subscribe({
       next: (res) => {
         this.saving = false;
         this.message = 'Profil mis à jour avec succès';
-        this.currentUser = res.user;
+        this.currentUser = res.user; // Mise à jour locale
       },
       error: (err) => {
         this.saving = false;
@@ -73,6 +82,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Traduction des rôles pour l'affichage
   getRoleLabel(role: string): string {
     const labels: { [key: string]: string } = {
       client: 'Client',
@@ -82,6 +92,7 @@ export class ProfileComponent implements OnInit {
     return labels[role] || role;
   }
 
+  // Formatage de la date d'inscription
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -90,5 +101,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Raccourci pour le HTML
   get f() { return this.profileForm.controls; }
 }

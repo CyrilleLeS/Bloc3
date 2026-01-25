@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
+// Composant Page Non Trouvée (404)
+// S'affiche quand l'utilisateur tente d'accéder à une URL qui n'existe pas.
+
 @Component({
   selector: 'app-not-found',
   standalone: true,

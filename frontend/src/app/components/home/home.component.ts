@@ -5,17 +5,21 @@ import { FormsModule } from '@angular/forms';
 import { HotelService } from '../../services/hotel.service';
 import { Hotel } from '../../models';
 
+// Composant Page d'Accueil (Home)
+// C'est la vitrine du site. Elle affiche une barre de recherche rapide
+// et une sélection d'hôtels en vedette.
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule,],
+  imports: [CommonModule, RouterModule, FormsModule], // Imports nécessaires
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  featuredHotels: Hotel[] = [];
-  loading = true;
-  searchCity = '';
+  featuredHotels: Hotel[] = []; // Liste des hôtels mis en avant
+  loading = true; // État de chargement
+  searchCity = ''; // Valeur du champ de recherche
 
   constructor(
     private hotelService: HotelService,
@@ -26,6 +30,7 @@ export class HomeComponent implements OnInit {
     this.loadFeaturedHotels();
   }
 
+  // Charge les 6 premiers hôtels pour les afficher en vitrine
   loadFeaturedHotels(): void {
     this.hotelService.getHotels({ limit: 6 }).subscribe({
       next: (res) => {
@@ -38,18 +43,23 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  // Lancé quand on clique sur "Rechercher"
   onSearch(): void {
     if (this.searchCity.trim()) {
+      // Redirection vers la page de liste avec le filtre ville
       this.router.navigate(['/hotels'], { queryParams: { city: this.searchCity } });
     } else {
+      // Si vide, on va juste sur la liste complète
       this.router.navigate(['/hotels']);
     }
   }
 
+  // Utilitaire pour afficher les étoiles
   getStars(count: number): number[] {
     return Array(count).fill(0);
   }
 
+  // Récupère l'image principale ou une image par défaut
   getHotelImage(hotel: Hotel): string {
     return hotel.images && hotel.images.length > 0 
       ? hotel.images[0] 

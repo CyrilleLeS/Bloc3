@@ -3,13 +3,18 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-//Interface --> Utilisée pour décrire la forme des objets, elle peut être étendue par d'autres interfaces. 
-//Presque tout en JavaScript est un objet, et les interfaces sont conçues pour correspondre à leur comportement à l'exécution.
-//donc je déclare et définit la "forme" des objets pour l'api amadeus
+// Service Amadeus (Frontend)
+// Ce service fait le lien avec notre backend, qui lui-même parle à l'API Amadeus.
+// Il sert à chercher des villes, des hôtels et des offres de prix.
 
+// --------------------------------------------------------------------------
+// INTERFACES (Modèles de données)
+// --------------------------------------------------------------------------
+
+// Structure d'une ville (pour l'autocomplétion)
 export interface AmadeusCity {
   name: string;
-  iataCode: string;
+  iataCode: string; // Code aéroport (ex: PAR, NYC)
   country?: string;
   address?: {
     cityName: string;
@@ -21,6 +26,7 @@ export interface AmadeusCity {
   };
 }
 
+// Structure d'un hôtel (Info générale)
 export interface AmadeusHotel {
   hotelId: string;
   name: string;
@@ -39,6 +45,7 @@ export interface AmadeusHotel {
   };
 }
 
+// Structure d'un hôtel AVEC des offres de prix
 export interface AmadeusHotelOffer {
   hotelId: string;
   name: string;
@@ -53,6 +60,7 @@ export interface AmadeusHotelOffer {
   offers: AmadeusOffer[];
 }
 
+// Structure d'une offre précise (Chambre + Prix)
 export interface AmadeusOffer {
   id: string;
   checkInDate: string;
@@ -73,9 +81,9 @@ export interface AmadeusOffer {
   };
 }
 
-//Ici je gère la relation entre back et frontend
-//Les infos seront récupérés dans l'api amadeus configuré dans le backend
-//et retourné en this.http
+// --------------------------------------------------------------------------
+// SERVICE
+// --------------------------------------------------------------------------
 
 @Injectable({
   providedIn: 'root'
@@ -85,18 +93,21 @@ export class AmadeusService {
 
   constructor(private http: HttpClient) {}
 
-  // Rechercher des villes (autocomplete)
+  // 1. Recherche de villes (Autocomplete)
+  // Utile pour la barre de recherche "Où allez-vous ?"
   searchCities(keyword: string): Observable<{ success: boolean; count: number; cities: AmadeusCity[] }> {
     const params = new HttpParams().set('keyword', keyword);
     return this.http.get<any>(`${this.apiUrl}/locations/cities`, { params });
   }
 
-  // Obtenir les villes populaires
+  // 2. Villes populaires
+  // Pour afficher des suggestions sur la page d'accueil
   getPopularCities(): Observable<{ success: boolean; cities: AmadeusCity[] }> {
     return this.http.get<any>(`${this.apiUrl}/locations/popular`);
   }
 
-  // Rechercher des hôtels par code ville
+  // 3. Recherche d'hôtels par code ville
+  // Trouve tous les hôtels dans une zone, sans forcément avoir les prix
   searchHotelsByCity(cityCode: string, options?: {
     radius?: number;
     radiusUnit?: string;
@@ -115,7 +126,7 @@ export class AmadeusService {
     return this.http.get<any>(`${this.apiUrl}/hotels/by-city`, { params });
   }
 
-  // Rechercher des hôtels par coordonnées
+  // 4. Recherche d'hôtels par coordonnées GPS
   searchHotelsByGeocode(latitude: number, longitude: number, radius?: number): Observable<{ success: boolean; count: number; hotels: AmadeusHotel[] }> {
     let params = new HttpParams()
       .set('latitude', latitude.toString())
@@ -126,7 +137,8 @@ export class AmadeusService {
     return this.http.get<any>(`${this.apiUrl}/hotels/by-geocode`, { params });
   }
 
-  // Rechercher des offres d'hôtels (prix et disponibilité)
+  // 5. Recherche d'offres (Prix & Dispo)
+  // C'est l'étape la plus importante : trouver les chambres disponibles et leurs prix
   searchHotelOffers(options: {
     hotelIds: string;
     checkInDate: string;
@@ -141,6 +153,7 @@ export class AmadeusService {
       .set('checkInDate', options.checkInDate)
       .set('checkOutDate', options.checkOutDate);
     
+    // Paramètres optionnels
     if (options.adults) params = params.set('adults', options.adults.toString());
     if (options.roomQuantity) params = params.set('roomQuantity', options.roomQuantity.toString());
     if (options.currency) params = params.set('currency', options.currency);
@@ -149,7 +162,7 @@ export class AmadeusService {
     return this.http.get<any>(`${this.apiUrl}/hotels/offers`, { params });
   }
 
-  // Obtenir les détails d'une offre
+  // 6. Détail d'une offre spécifique
   getHotelOffer(offerId: string): Observable<{ success: boolean; offer: any }> {
     return this.http.get<any>(`${this.apiUrl}/hotels/offer/${offerId}`);
   }

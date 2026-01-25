@@ -4,6 +4,10 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User, UsersResponse, DashboardStats } from '../models';
 
+// Service Utilisateur
+// Gère toutes les opérations liées aux utilisateurs (hors authentification)
+// Principalement utilisé par le tableau de bord administrateur
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,12 +16,13 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  // Dashboard stats
+  // Récupérer les statistiques globales (KPIs)
+  // Ex: nombre total d'inscrits, chiffre d'affaires, etc.
   getDashboardStats(): Observable<{ success: boolean; stats: DashboardStats }> {
     return this.http.get<{ success: boolean; stats: DashboardStats }>(`${this.apiUrl}/stats/dashboard`);
   }
 
-  // Liste des utilisateurs
+  // Récupérer la liste de tous les utilisateurs (avec filtres)
   getUsers(filters?: {
     role?: string;
     isActive?: boolean;
@@ -36,12 +41,12 @@ export class UserService {
     return this.http.get<UsersResponse>(this.apiUrl, { params });
   }
 
-  // Récupérer un utilisateur
+  // Récupérer un utilisateur spécifique par son ID
   getUser(id: string): Observable<{ success: boolean; user: User; stats: any }> {
     return this.http.get<{ success: boolean; user: User; stats: any }>(`${this.apiUrl}/${id}`);
   }
 
-  // Créer un utilisateur
+  // Créer un nouvel utilisateur manuellement (Admin)
   createUser(user: {
     firstName: string;
     lastName: string;
@@ -53,12 +58,12 @@ export class UserService {
     return this.http.post<{ success: boolean; message: string; user: User }>(this.apiUrl, user);
   }
 
-  // Mettre à jour un utilisateur
+  // Mettre à jour les infos d'un utilisateur (Admin)
   updateUser(id: string, data: Partial<User>): Observable<{ success: boolean; message: string; user: User }> {
     return this.http.put<{ success: boolean; message: string; user: User }>(`${this.apiUrl}/${id}`, data);
   }
 
-  // Supprimer un utilisateur
+  // Supprimer un utilisateur (Admin)
   deleteUser(id: string): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${id}`);
   }

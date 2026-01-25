@@ -1,10 +1,16 @@
 const amadeus = require('../config/amadeus');
 
-// cette fonction gère la recherche des hôtels par ville via l'api amadeus
-// la route sera ---> GET /api/amadeus/hotels/by-city
-// l'accès sera public
-// Pour les fonctions suivantes, le schéma sera le même: on envoi une requête,
-// des if pour déterminer la réponse et un res en .json + message d'erreur au cas ou
+// Contrôleur Amadeus (API Externe)
+// Ce fichier sert de "passerelle" entre notre application et Amadeus (fournisseur de données de voyage).
+// Il permet de chercher des vrais hôtels, des villes et des offres en temps réel.
+
+// --------------------------------------------------------------------------
+// RECHERCHE D'HÔTELS (GÉOGRAPHIQUE)
+// --------------------------------------------------------------------------
+
+// 1. Recherche par ville (Code IATA, ex: PAR pour Paris)
+// Route: GET /api/amadeus/hotels/by-city
+// Accès: Public
 exports.searchHotelsByCity = async (req, res) => {
   try {
     const { cityCode, radius = 5, radiusUnit = 'KM', ratings, amenities } = req.query;
@@ -13,6 +19,7 @@ exports.searchHotelsByCity = async (req, res) => {
       return res.status(400).json({ message: 'Le code ville (cityCode) est requis' });
     }
 
+    // Construction des paramètres pour Amadeus
     const params = {
       cityCode: cityCode.toUpperCase(),
       radius: parseInt(radius),
@@ -20,15 +27,17 @@ exports.searchHotelsByCity = async (req, res) => {
     };
 
     if (ratings) {
-      params.ratings = ratings; // ex: "3,4,5"
+      params.ratings = ratings; // Filtre par étoiles (ex: "3,4,5")
     }
 
     if (amenities) {
-      params.amenities = amenities; // ex: "SWIMMING_POOL,SPA"
+      params.amenities = amenities; // Filtre par équipements (ex: "SWIMMING_POOL")
     }
 
+    // Appel à l'API Amadeus
     const response = await amadeus.referenceData.locations.hotels.byCity.get(params);
 
+    // On renvoie une version simplifiée des données au frontend
     res.json({
       success: true,
       count: response.data.length,
@@ -38,7 +47,7 @@ exports.searchHotelsByCity = async (req, res) => {
         chainCode: hotel.chainCode,
         iataCode: hotel.iataCode,
         dupeId: hotel.dupeId,
-        geoCode: hotel.geoCode,
+        geoCode: hotel.geoCode, // Latitude / Longitude
         address: hotel.address,
         distance: hotel.distance,
         lastUpdate: hotel.lastUpdate
@@ -53,9 +62,9 @@ exports.searchHotelsByCity = async (req, res) => {
   }
 };
 
-// Rechercher des hôtels par coordonnées GPS
-// GET /api/amadeus/hotels/by-geocode
-// Public
+// 2. Recherche par coordonnées GPS (Latitude / Longitude)
+// Route: GET /api/amadeus/hotels/by-geocode
+// Accès: Public
 exports.searchHotelsByGeocode = async (req, res) => {
   try {
     const { latitude, longitude, radius = 5, radiusUnit = 'KM' } = req.query;
@@ -85,13 +94,17 @@ exports.searchHotelsByGeocode = async (req, res) => {
   }
 };
 
-// Rechercher des offres d'hôtels (prix et disponibilité)
-// GET /api/amadeus/hotels/offers
-// Public
+// --------------------------------------------------------------------------
+// RECHERCHE D'OFFRES (PRIX & DISPO)
+// --------------------------------------------------------------------------
+
+// Trouve les prix et disponibilités pour une liste d'hôtels donnée
+// Route: GET /api/amadeus/hotels/offers
+// Accès: Public
 exports.searchHotelOffers = async (req, res) => {
   try {
     const {
-      hotelIds,
+      hotelIds,    // IDs des hôtels trouvés précédemment
       checkInDate,
       checkOutDate,
       adults = 1,
@@ -101,16 +114,17 @@ exports.searchHotelOffers = async (req, res) => {
       boardType
     } = req.query;
 
+    // Validation des champs obligatoires
     if (!hotelIds) {
       return res.status(400).json({ message: 'hotelIds est requis' });
     }
-
     if (!checkInDate || !checkOutDate) {
       return res.status(400).json({ message: 'Les dates de check-in et check-out sont requises' });
     }
 
+    // Paramètres de la recherche
     const params = {
-      hotelIds: hotelIds, // Peut être une liste: "HOTEL1,HOTEL2"
+      hotelIds: hotelIds, // Peut être une liste séparée par des virgules
       checkInDate,
       checkOutDate,
       adults: parseInt(adults),
@@ -118,16 +132,13 @@ exports.searchHotelOffers = async (req, res) => {
       currency
     };
 
-    if (priceRange) {
-      params.priceRange = priceRange; // ex: "100-300"
-    }
+    if (priceRange) params.priceRange = priceRange;
+    if (boardType) params.boardType = boardType;
 
-    if (boardType) {
-      params.boardType = boardType; // ROOM_ONLY, BREAKFAST, etc.
-    }
-
+    // Appel Amadeus
     const response = await amadeus.shopping.hotelOffersSearch.get(params);
 
+    // Structuration de la réponse pour le frontend
     res.json({
       success: true,
       count: response.data.length,
@@ -172,9 +183,9 @@ exports.searchHotelOffers = async (req, res) => {
   }
 };
 
-// Obtenir les détails d'une offre spécifique
-// GET /api/amadeus/hotels/offer/:offerId
-// Public
+// Obtenir le détail d'une offre unique (pour finaliser la résa)
+// Route: GET /api/amadeus/hotels/offer/:offerId
+// Accès: Public
 exports.getHotelOffer = async (req, res) => {
   try {
     const { offerId } = req.params;
@@ -194,9 +205,13 @@ exports.getHotelOffer = async (req, res) => {
   }
 };
 
-// Rechercher des villes (autocomplete)
-// GET /api/amadeus/locations/cities
-// Public
+// --------------------------------------------------------------------------
+// UTILITAIRES (VILLES)
+// --------------------------------------------------------------------------
+
+// Autocomplétion : Trouver une ville par mot-clé
+// Route: GET /api/amadeus/locations/cities
+// Accès: Public
 exports.searchCities = async (req, res) => {
   try {
     const { keyword } = req.query;
@@ -229,10 +244,11 @@ exports.searchCities = async (req, res) => {
   }
 };
 
-// Obtenir les codes IATA des villes populaires
-// GET /api/amadeus/locations/popular
-// Public
+// Liste des villes populaires (pour l'accueil)
+// Route: GET /api/amadeus/locations/popular
+// Accès: Public
 exports.getPopularCities = async (req, res) => {
+  // Liste statique pour l'instant (pour éviter de consommer trop de quotas API)
   const popularCities = [
     { name: 'Paris', iataCode: 'PAR', country: 'France' },
     { name: 'Londres', iataCode: 'LON', country: 'Royaume-Uni' },

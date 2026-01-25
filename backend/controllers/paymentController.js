@@ -70,6 +70,58 @@ exports.createPaymentIntent = async (req, res) => {
   }
 };
 
+// Confirmer le paiement après succès sur le frontend
+// Route: POST /api/payments/confirm
+// Accès: Privé
+exports.confirmPayment = async (req, res) => {
+  try {
+    const { bookingId, paymentIntentId } = req.body;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Réservation non trouvée' });
+    }
+
+    // Sécurité
+    if (booking.user.toString() !== req.user.id) {
+      return res.status(403).json({ 
+        message: 'Vous n\'êtes pas autorisé à confirmer ce paiement' 
+      });
+    }
+
+    // On vérifie auprès de Stripe que le paiement a bien réussi
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (paymentIntent.status === 'succeeded') {
+      // Tout est bon, on valide la réservation
+      booking.paymentStatus = 'paid';
+      booking.status = 'confirmed';
+      await booking.save();
+
+      res.json({
+        success: true,
+        message: 'Paiement confirmé avec succès',
+        booking: {
+          id: booking._id,
+          status: booking.status,
+          paymentStatus: booking.paymentStatus,
+          totalPrice: booking.totalPrice
+        }
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'Le paiement n\'a pas été effectué',
+        paymentStatus: paymentIntent.status
+      });
+    }
+  } catch (error) {
+    console.error('Erreur confirmPayment:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
 // --------------------------------------------------------------------------
 // SIMULATION (TEST)
 // --------------------------------------------------------------------------
