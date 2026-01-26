@@ -2,7 +2,7 @@
   <div class="container">
     <div class="page-header">
       <a routerLink="/dashboard/hotelier" class="back-link">← Retour au dashboard</a>
-      <h1>Ajouter une chambre</h1>
+      <h1>{{ isEditMode ? 'Modifier la chambre' : 'Ajouter une chambre' }}</h1>
       @if (hotelName) {
         <p class="hotel-name">🏨 {{ hotelName }}</p>
       }
@@ -141,7 +141,7 @@
             @if (submitting) {
               <span class="spinner-sm"></span> Enregistrement...
             } @else {
-              Créer la chambre
+              {{ isEditMode ? 'Enregistrer les modifications' : 'Créer la chambre' }}
             }
           </button>
         </div>

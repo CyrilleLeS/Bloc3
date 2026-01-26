@@ -99,6 +99,68 @@
         }
       </div>
 
+      <!-- Mes Chambres -->
+      @if (hotels.length > 0) {
+        <div class="section">
+          <div class="section-header">
+            <h2>Chambres : {{ getSelectedHotelName() }}</h2>
+            <a [routerLink]="['/dashboard/hotelier/hotels', selectedHotelId, 'rooms', 'new']" class="btn btn-sm btn-primary">
+              ➕ Ajouter une chambre
+            </a>
+          </div>
+
+          @if (roomsLoading) {
+            <div class="loading-inline">
+              <div class="spinner-sm"></div> Chargement des chambres...
+            </div>
+          } @else if (rooms.length === 0) {
+            <div class="empty-state small">
+              <p>Aucune chambre pour cet hôtel.</p>
+              <a [routerLink]="['/dashboard/hotelier/hotels', selectedHotelId, 'rooms', 'new']" class="btn btn-sm btn-outline">
+                Ajouter une chambre
+              </a>
+            </div>
+          } @else {
+            <div class="rooms-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nom / Type</th>
+                    <th>Prix</th>
+                    <th>Capacité</th>
+                    <th>Dispo</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (room of rooms; track room._id) {
+                    <tr>
+                      <td>
+                        <div class="room-info">
+                          <span class="room-name">{{ room.name }}</span>
+                          <span class="room-type">{{ room.type }}</span>
+                        </div>
+                      </td>
+                      <td class="price">{{ room.price | number:'1.0-0' }} €</td>
+                      <td>👤{{ room.capacity.adults }} + 👶{{ room.capacity.children }}</td>
+                      <td>{{ room.quantity }} dispo(s)</td>
+                      <td>
+                        <a [routerLink]="['/dashboard/hotelier/rooms', room._id, 'edit']" class="btn btn-sm">
+                          ✏️
+                        </a>
+                        <button class="btn btn-sm btn-danger" (click)="$event.stopPropagation(); deleteRoom(room)">
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+
       <!-- Réservations récentes -->
       @if (hotels.length > 0) {
         <div class="section">

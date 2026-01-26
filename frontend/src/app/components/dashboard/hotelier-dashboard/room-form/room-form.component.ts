@@ -14,6 +14,8 @@ import { HotelService } from '../../../../services/hotel.service';
 export class RoomFormComponent implements OnInit {
   roomForm: FormGroup;
   hotelId: string | null = null;
+  roomId: string | null = null;
+  isEditMode = false;
   hotelName = '';
   submitting = false;
   error = '';
@@ -73,9 +75,16 @@ export class RoomFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.hotelId = this.route.snapshot.paramMap.get('hotelId');
+    this.roomId = this.route.snapshot.paramMap.get('roomId');
+    this.isEditMode = !!this.roomId;
+
     if (this.hotelId) {
       this.loadHotelInfo();
-    } else {
+    }
+
+    if (this.isEditMode && this.roomId) {
+      this.loadRoomData();
+    } else if (!this.hotelId) {
       this.router.navigate(['/dashboard/hotelier']);
     }
   }
@@ -85,6 +94,33 @@ export class RoomFormComponent implements OnInit {
     this.hotelService.getHotel(this.hotelId).subscribe({
       next: (res) => {
         this.hotelName = res.hotel.name;
+      }
+    });
+  }
+
+  loadRoomData(): void {
+    if (!this.roomId) return;
+    this.hotelService.getRoom(this.roomId).subscribe({
+      next: (res) => {
+        const room = res.room;
+        this.hotelId = typeof room.hotel === 'string' ? room.hotel : room.hotel._id;
+        if (!this.hotelName) this.loadHotelInfo();
+
+        this.roomForm.patchValue({
+          name: room.name,
+          description: room.description,
+          type: room.type,
+          price: room.price,
+          adults: room.capacity.adults,
+          children: room.capacity.children,
+          size: room.size,
+          bedType: room.bedType,
+          quantity: room.quantity,
+          amenities: room.amenities
+        });
+      },
+      error: () => {
+        this.error = 'Impossible de charger les données de la chambre';
       }
     });
   }
@@ -128,7 +164,11 @@ export class RoomFormComponent implements OnInit {
       amenities: formValue.amenities
     };
 
-    this.hotelService.createRoom(roomData).subscribe({
+    const request = this.isEditMode && this.roomId
+      ? this.hotelService.updateRoom(this.roomId, roomData)
+      : this.hotelService.createRoom(roomData);
+
+    request.subscribe({
       next: () => {
         this.submitting = false;
         this.router.navigate(['/dashboard/hotelier']);

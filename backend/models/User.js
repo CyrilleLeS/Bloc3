@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     // Regex pour valider le format de l'email (doit ressembler à x@y.z)
     match: [
-      /^S+@S+\.(com|fr|net|org|be|ch|edu|gov)$/i, 
+      /^\S+@\S+\.\S+$/, 
       'Veuillez fournir un email valide (.com, .fr, etc.)'
     ]
   },

@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { HotelService } from '../../../services/hotel.service';
 import { BookingService } from '../../../services/booking.service';
-import { User, Hotel, Booking } from '../../../models';
+import { User, Hotel, Booking, Room } from '../../../models';
 
 // Tableau de Bord Hôtelier
 // C'est l'interface de gestion pour les propriétaires d'hôtels.
@@ -22,12 +22,14 @@ export class HotelierDashboardComponent implements OnInit {
   currentUser: User | null = null;
   hotels: Hotel[] = []; // Liste de "mes" hôtels
   recentBookings: Booking[] = []; // Réservations reçues
+  rooms: Room[] = []; // Liste des chambres de l'hôtel sélectionné
   
   // Hôtel sélectionné dans le menu déroulant (pour filtrer les résas)
   selectedHotelId: string = '';
   
   loading = true; // Chargement global
   bookingsLoading = false; // Chargement spécifique de la liste des résas
+  roomsLoading = false; // Chargement spécifique de la liste des chambres
 
   // Résumé chiffré
   stats = {
@@ -60,6 +62,7 @@ export class HotelierDashboardComponent implements OnInit {
         if (this.hotels.length > 0) {
           this.selectedHotelId = this.hotels[0]._id;
           this.loadHotelBookings(this.selectedHotelId);
+          this.loadHotelRooms(this.selectedHotelId);
         } else {
           // Sinon on a fini de charger (rien à afficher de plus)
           this.loading = false;
@@ -95,10 +98,25 @@ export class HotelierDashboardComponent implements OnInit {
     });
   }
 
+  // Charge les chambres pour un hôtel spécifique
+  loadHotelRooms(hotelId: string): void {
+    this.roomsLoading = true;
+    this.hotelService.getRoomsByHotel(hotelId).subscribe({
+      next: (res) => {
+        this.rooms = res.rooms;
+        this.roomsLoading = false;
+      },
+      error: () => {
+        this.roomsLoading = false;
+      }
+    });
+  }
+
   // Appelé quand l'hôtelier change d'hôtel dans la liste déroulante
   onHotelChange(hotelId: string): void {
     this.selectedHotelId = hotelId;
     this.loadHotelBookings(hotelId);
+    this.loadHotelRooms(hotelId);
   }
 
   // Action rapide : Confirmer une réservation
@@ -143,6 +161,12 @@ export class HotelierDashboardComponent implements OnInit {
     return classes[status] || 'badge-secondary';
   }
 
+  // Récupère le nom de l'hôtel sélectionné
+  getSelectedHotelName(): string {
+    const hotel = this.hotels.find(h => h._id === this.selectedHotelId);
+    return hotel ? hotel.name : '';
+  }
+
   // Supprimer un hôtel
   deleteHotel(hotel: Hotel): void {
     if (!confirm(`Êtes-vous sûr de vouloir supprimer "${hotel.name}" ?`)) {
@@ -159,7 +183,24 @@ export class HotelierDashboardComponent implements OnInit {
         if (this.selectedHotelId === hotel._id && this.hotels.length > 0) {
           this.selectedHotelId = this.hotels[0]._id;
           this.loadHotelBookings(this.selectedHotelId);
+          this.loadHotelRooms(this.selectedHotelId);
         }
+      }
+    });
+  }
+
+  // Supprimer une chambre
+  deleteRoom(room: Room): void {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer la chambre "${room.name}" ?`)) {
+      return;
+    }
+
+    this.hotelService.deleteRoom(room._id).subscribe({
+      next: () => {
+        this.rooms = this.rooms.filter(r => r._id !== room._id);
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Erreur lors de la suppression de la chambre');
       }
     });
   }

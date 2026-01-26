@@ -89,6 +89,12 @@ export const routes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: ['hotelier'] }
   },
+  {
+    path: 'dashboard/hotelier/rooms/:roomId/edit',
+    loadComponent: () => import('./components/dashboard/hotelier-dashboard/room-form/room-form.component').then(m => m.RoomFormComponent),
+    canActivate: [RoleGuard],
+    data: { roles: ['hotelier'] }
+  },
 
   // Tableau de Bord Admin (Protégé + Rôle Admin)
   {
