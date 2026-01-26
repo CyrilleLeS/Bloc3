@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 // Juste pour vérifier que le serveur répond bien
 app.get('/', (req, res) => {
   res.json({
-    message: 'Bienvenue sur l\'API Hotel Booking',
+    message: 'Bienvenue sur l\'API Bloc3',
     version: '1.0.0'
   });
 });

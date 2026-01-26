@@ -1,88 +1,159 @@
-# ResaHotel
+# 🏨 Bloc3 – Plateforme de Réservation Hôtelière
 
-ResaHotel est une plateforme complète de réservation d'hôtels qui met en relation les voyageurs avec les hôtels. Elle offre des fonctionnalités pour rechercher des hôtels, réserver des chambres et gérer les réservations tant pour les clients que pour les administrateurs d'hôtels.
+**Bloc3** est une application **Fullstack** permettant la gestion et la réservation de chambres d’hôtel.
+Elle connecte **voyageurs**, **hôteliers** et **administrateurs** via une interface moderne et une API sécurisée.
 
-## Fonctionnalités
+---
 
--   **Recherche et Filtres :** Trouvez des hôtels par ville, nombre d'étoiles et équipements.
--   **Système de Réservation :** Interface de réservation facile à utiliser avec sélection de chambre.
--   **Comptes Utilisateurs :** Inscription et connexion sécurisées pour les utilisateurs.
--   **Tableau de Bord Admin :** Gérez les hôtels, les chambres et les réservations (pour les hôteliers/administrateurs).
--   **Design Responsive :** Optimisé pour les appareils de bureau et mobiles.
+## ✨ Fonctionnalités
 
-## Stack Technique
+### 🌍 Espace Voyageur (Client)
 
--   **Frontend :** Angular (avec Standalone Components)
--   **Backend :** Node.js, Express (basé sur la configuration standard)
--   **Base de données :** MongoDB (impliqué)
--   **Styles :** SCSS
+* Recherche avancée (ville, dates, prix, étoiles, équipements)
+* Réservation instantanée avec disponibilités en temps réel
+* Gestion du profil utilisateur
+* Simulation de paiement sécurisé (Stripe)
 
-## Pour Commencer
+### 🏨 Espace Hôtelier
+
+* Dashboard d’activité (réservations, revenus)
+* Gestion des établissements
+* Gestion des chambres (types, prix, disponibilités)
+
+### 🛡️ Administration
+
+* Supervision globale de la plateforme
+* Gestion des utilisateurs
+* Système de rôles et permissions (RBAC)
+
+---
+
+## 🛠️ Stack Technique
+
+### Frontend (`/frontend`)
+
+* **Framework** : Angular 19+ (Standalone Components)
+* **Langage** : TypeScript
+* **Style** : SCSS, responsive design
+* **Architecture** : Services, Guards, Interceptors HTTP
+
+### Backend (`/backend`)
+
+* **Serveur** : Node.js + Express
+* **Base de données** : MongoDB (Mongoose)
+* **Authentification** : JWT & Bcrypt
+* **APIs externes** : Stripe, Amadeus
+
+---
+
+## 🚀 Installation et Démarrage
 
 ### Prérequis
 
--   Node.js (v18 ou supérieur recommandé)
--   npm (v9 ou supérieur recommandé)
--   Angular CLI (`npm install -g @angular/cli`)
+* Node.js v18 ou supérieur
+* MongoDB (local ou Atlas)
+* Angular CLI
 
-### Installation
+```bash
+npm install -g @angular/cli
+```
 
-1.  Clonez le dépôt :
-    ```bash
-    git clone <url-du-depot>
-    cd resahotel
-    ```
+---
 
-2.  Installez les dépendances frontend :
-    ```bash
-    cd frontend
-    npm install
-    ```
+### 1️⃣ Configuration du Backend
 
-3.  Installez les dépendances backend :
-    ```bash
-    cd ../backend
-    npm install
-    ```
+```bash
+# Accéder au dossier backend
+cd backend
 
-### Lancer l'Application
+# Installer les dépendances
+npm install
+```
 
-1.  **Démarrer le Backend :**
-    Naviguez dans le dossier backend et démarrez le serveur :
-    ```bash
-    cd backend
-    npm start
-    ```
+Créer un fichier `.env` à la racine du dossier **backend** :
 
-2.  **Démarrer le Frontend :**
-    Naviguez dans le dossier frontend et démarrez le serveur de développement Angular :
-    ```bash
-    cd frontend
-    ng serve
-    ```
-    Ouvrez votre navigateur et naviguez vers `http://localhost:4200/`.
+```env
+PORT=5000
+MONGO_URI=à_remplir
+JWT_SECRET=votre_super_secret
+# Optionnel : clés API Stripe / Amadeus
+```
 
-## Lancer les Tests
+Démarrer le serveur :
 
-Pour exécuter les tests unitaires du frontend :
+```bash
+npm start
+```
+
+➡️ Backend disponible sur :
+`http://localhost:5000`
+
+---
+
+### 2️⃣ Configuration du Frontend
+
+```bash
+# Accéder au dossier frontend
+cd frontend
+
+# Installer les dépendances
+npm install
+
+# Démarrer l'application
+ng serve
+```
+
+➡️ Frontend disponible sur :
+`http://localhost:4200`
+
+---
+
+## 🧪 Tests
+
+### Tests Unitaires (Frontend)
+
+Le projet utilise **Jasmine** et **Karma**.
 
 ```bash
 cd frontend
 ng test
 ```
 
-## Structure du Projet
+### Tests d’Intégration (Backend)
 
--   `frontend/` : Code source de l'application Angular.
-    -   `src/app/components/` : Composants UI (Liste d'hôtels, Formulaire de réservation, etc.).
-    -   `src/app/services/` : Services pour la communication API.
-    -   `src/app/models/` : Interfaces/modèles TypeScript.
--   `backend/` : Code de l'API côté serveur.
+Les endpoints API peuvent être testés via **Postman** ou **cURL**.
 
-## Contribuer
+Exemple :
 
-1.  Forkez le dépôt.
-2.  Créez votre branche de fonctionnalité (`git checkout -b feature/ma-super-fonctionnalite`).
-3.  Committez vos changements (`git commit -m 'Ajout d'une super fonctionnalité'`).
-4.  Pushez vers la branche (`git push origin feature/ma-super-fonctionnalite`).
-5.  Ouvrez une Pull Request.
+```http
+GET http://localhost:5000/api/hotels
+```
+
+---
+
+## 📂 Structure du Projet
+
+```bash
+Bloc3/
+├── backend/                # API Node.js & Express
+│   ├── config/             # Connexions (DB, Stripe, Amadeus)
+│   ├── controllers/        # Logique métier
+│   ├── models/             # Schémas de données (Mongoose)
+│   └── routes/             # Endpoints API
+│
+└── frontend/               # Client Angular
+    ├── src/app/
+    │   ├── components/     # Pages & composants UI
+    │   ├── guards/         # Protection des routes
+    │   ├── services/       # Appels HTTP vers le backend
+    │   └── app.routes.ts   # Configuration du routage
+    └── styles.scss         # Styles globaux
+```
+
+---
+
+## 👨‍💻 Auteur
+
+Projet réalisé par **Cyrille Le S.**
+Dans le cadre du module de développement **Fullstack**.
+

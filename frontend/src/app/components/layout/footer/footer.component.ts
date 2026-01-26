@@ -15,7 +15,7 @@ import { RouterModule } from '@angular/router';
       <div class="footer-container">
         <!-- Section À Propos -->
         <div class="footer-section">
-          <h3>🏨 HotelBooking</h3>
+          <h3>🏨 Bloc3</h3>
           <p>Trouvez et réservez les meilleurs hôtels au meilleur prix.</p>
         </div>
         
@@ -31,7 +31,7 @@ import { RouterModule } from '@angular/router';
         <!-- Section Contact -->
         <div class="footer-section">
           <h4>Contact</h4>
-          <p>📧 contact&#64;hotelbooking.com</p>
+          <p>📧 contact&#64;Bloc3.com</p>
           <p>📞 +33 1 23 45 67 89</p>
           <p>📍 Paris, France</p>
         </div>
@@ -39,7 +39,7 @@ import { RouterModule } from '@angular/router';
       
       <!-- Copyright -->
       <div class="footer-bottom">
-        <p>&copy; {{ currentYear }} HotelBooking. Tous droits réservés.</p>
+        <p>&copy; {{ currentYear }} Bloc3. Tous droits réservés.</p>
       </div>
     </footer>
   `,

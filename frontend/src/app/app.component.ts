@@ -39,5 +39,5 @@ import { FooterComponent } from './components/layout/footer/footer.component';
   `]
 })
 export class AppComponent {
-  title = 'HotelBooking';
+  title = 'Bloc3';
 }
