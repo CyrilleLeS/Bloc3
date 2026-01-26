@@ -1,7 +1,8 @@
-//Création de la variable "amadeus" qui appelera les clés api
-//Pour valider les requêtes faites avec l'api
-
 const Amadeus = require('amadeus');
+
+// Configuration Amadeus
+// Initialise la connexion avec l'API Amadeus (Vols, Hôtels)
+// Les clés (API_KEY et SECRET) sont stockées dans le fichier .env pour la sécurité.
 
 const amadeus = new Amadeus({
   clientId: process.env.AMADEUS_API_KEY,
