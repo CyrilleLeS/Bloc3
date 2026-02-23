@@ -1,106 +1,102 @@
-<div class="home">
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Trouvez l'hôtel parfait pour votre séjour</h1>
-      <p>Réservez parmi des milliers d'hôtels aux meilleurs prix</p>
-      
-      <div class="search-box">
-        <input
-          type="text"
-          [(ngModel)]="searchCity"
-          placeholder="Où souhaitez-vous aller ?"
-          (keyup.enter)="onSearch()"
-        />
-        <button (click)="onSearch()">
-          🔍 Rechercher
-        </button>
+<div class="home-page">
+  <!-- Section Hero avec recherche -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container hero-container">
+      <div class="hero-text">
+        <h1>Voyagez. Explorez. <span class="accent">Réservez.</span></h1>
+        <p>Découvrez les meilleurs hôtels partout dans le monde au meilleur prix.</p>
+      </div>
+
+      <div class="main-search-box">
+        <div class="search-tabs">
+          <button class="active">🏨 Hôtels</button>
+          <button disabled>✈️ Vols (Bientôt)</button>
+        </div>
+        <div class="search-form-inner">
+          <div class="input-group">
+            <label>Destination</label>
+            <input type="text" [(ngModel)]="searchCity" placeholder="Où allez-vous ?" (keyup.enter)="onSearch()">
+          </div>
+          <div class="input-group">
+            <label>Dates (Optionnel)</label>
+            <input type="date" placeholder="Arrivée">
+          </div>
+          <button class="btn btn-primary search-btn" (click)="onSearch()">Rechercher</button>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section class="features">
+  <!-- Section Pourquoi nous ? -->
+  <section class="services-section section-padding">
     <div class="container">
-      <div class="feature">
-        <span class="feature-icon">🏆</span>
-        <h3>Meilleurs prix garantis</h3>
-        <p>Nous vous garantissons les meilleurs tarifs disponibles</p>
+      <div class="section-title text-center">
+        <h2>Pourquoi nous choisir ?</h2>
+        <div class="title-line"></div>
       </div>
-      <div class="feature">
-        <span class="feature-icon">🔒</span>
-        <h3>Réservation sécurisée</h3>
-        <p>Paiement 100% sécurisé avec Stripe</p>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">⭐</span>
-        <h3>Avis vérifiés</h3>
-        <p>Des avis authentiques de vrais voyageurs</p>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">📞</span>
-        <h3>Support 24/7</h3>
-        <p>Notre équipe est disponible à tout moment</p>
+      <div class="services-grid">
+        <div class="service-item">
+          <div class="icon">💰</div>
+          <h3>Meilleur prix</h3>
+          <p>Nous comparons des milliers d'offres pour vous garantir le tarif le plus bas.</p>
+        </div>
+        <div class="service-item">
+          <div class="icon">🔒</div>
+          <h3>Paiement Sûr</h3>
+          <p>Toutes vos transactions sont protégées par les protocoles les plus récents.</p>
+        </div>
+        <div class="service-item">
+          <div class="icon">🌟</div>
+          <h3>Qualité Certifiée</h3>
+          <p>Chaque établissement est rigoureusement sélectionné par nos experts.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Featured Hotels Section -->
-  <section class="featured-hotels">
+  <!-- Section Hôtels Populaires -->
+  <section class="featured-section section-padding bg-light">
     <div class="container">
-      <h2>Hôtels populaires</h2>
+      <div class="section-title text-center">
+        <h2>Hôtels Populaires</h2>
+        <p>Les destinations les plus prisées par nos voyageurs cette semaine.</p>
+        <div class="title-line"></div>
+      </div>
       
       @if (loading) {
-        <div class="loading">
-          <div class="spinner-large"></div>
-          <p>Chargement des hôtels...</p>
-        </div>
-      } @else if (featuredHotels.length === 0) {
-        <div class="no-hotels">
-          <p>Aucun hôtel disponible pour le moment.</p>
-          <a routerLink="/auth/register" class="btn btn-primary">Devenez hôtelier</a>
+        <div class="text-center p-4">
+          <div class="spinner spinner-primary"></div>
+          <p>Recherche des meilleures offres...</p>
         </div>
       } @else {
-        <div class="hotels-grid">
+        <div class="hotels-grid mt-4">
           @for (hotel of featuredHotels; track hotel._id) {
-            <div class="hotel-card">
-              <div class="hotel-image">
-                <img [src]="getHotelImage(hotel)" [alt]="hotel.name" />
-                <div class="hotel-stars">
+            <div class="hotel-card-travel">
+              <div class="card-img">
+                <img [src]="getHotelImage(hotel)" [alt]="hotel.name">
+                <div class="price-tag">À partir de <span>{{ hotel.price || 85 }}€</span></div>
+              </div>
+              <div class="card-content">
+                <div class="stars">
                   @for (star of getStars(hotel.stars); track $index) {
-                    <span>⭐</span>
+                    <span>★</span>
                   }
                 </div>
-              </div>
-              <div class="hotel-info">
                 <h3>{{ hotel.name }}</h3>
-                <p class="hotel-location">📍 {{ hotel.address.city }}, {{ hotel.address.country }}</p>
-                <p class="hotel-description">{{ hotel.description | slice:0:100 }}...</p>
-                <div class="hotel-footer">
-                  <div class="hotel-rating" *ngIf="hotel.rating > 0">
-                    <span class="rating-badge">{{ hotel.rating | number:'1.1-1' }}</span>
-                    <span class="rating-text">Excellent</span>
-                  </div>
-                  <a [routerLink]="['/hotels', hotel._id]" class="btn btn-outline">Voir détails</a>
+                <p class="location">📍 {{ hotel.address.city }}</p>
+                <div class="card-footer">
+                  <a [routerLink]="['/hotels', hotel._id]" class="btn btn-outline btn-sm">Détails</a>
                 </div>
               </div>
             </div>
           }
         </div>
         
-        <div class="view-all">
-          <a routerLink="/hotels" class="btn btn-primary btn-large">Voir tous les hôtels</a>
+        <div class="text-center mt-4">
+          <a routerLink="/hotels" class="btn btn-dark">Explorer tout le catalogue</a>
         </div>
       }
-    </div>
-  </section>
-
-  <!-- CTA Section -->
-  <section class="cta">
-    <div class="container">
-      <h2>Vous êtes propriétaire d'un hôtel ?</h2>
-      <p>Rejoignez notre plateforme et augmentez votre visibilité</p>
-      <a routerLink="/auth/register" class="btn btn-white">Devenir partenaire</a>
     </div>
   </section>
 </div>

@@ -1,119 +1,105 @@
-<div class="bookings-page">
-  <div class="page-header">
+<main class="booking-list-page" aria-labelledby="booking-title">
+  <!-- En-tête de page -->
+  <div class="page-title-area">
     <div class="container">
-      <h1>Mes Réservations</h1>
-      <p>Consultez et gérez vos réservations</p>
+      <h1 id="booking-title">Mes <span class="accent">Réservations</span></h1>
+      <nav class="breadcrumb">Accueil / Réservations</nav>
     </div>
   </div>
 
-  <div class="container">
-    <!-- Filtres -->
-    <div class="filters-bar">
+  <div class="container section-padding">
+    <!-- Barre de filtres accessible -->
+    <div class="filters-bar-travel card">
       <div class="filter-group">
-        <label for="status">Statut:</label>
+        <label for="status">Statut des voyages :</label>
         <select id="status" [(ngModel)]="selectedStatus" (change)="onStatusChange()">
           @for (status of statuses; track status.value) {
             <option [value]="status.value">{{ status.label }}</option>
           }
         </select>
       </div>
-      <div class="results-count">
-        {{ total }} réservation{{ total > 1 ? 's' : '' }}
+      <div class="results-count" aria-live="polite">
+        {{ total }} réservation{{ total > 1 ? 's' : '' }} trouvée{{ total > 1 ? 's' : '' }}
       </div>
     </div>
 
-    <!-- Contenu -->
+    <!-- Contenu principal -->
     @if (loading) {
-      <div class="loading-state">
-        <div class="spinner-large"></div>
-        <p>Chargement de vos réservations...</p>
+      <div class="loader-area" aria-live="polite">
+        <div class="spinner spinner-primary"></div>
+        <p>Récupération de vos voyages...</p>
       </div>
     } @else if (error) {
-      <div class="alert alert-error">{{ error }}</div>
+      <div class="alert alert-error" role="alert">{{ error }}</div>
     } @else if (bookings.length === 0) {
-      <div class="empty-state">
-        <span class="empty-icon">📋</span>
-        <h3>Aucune réservation</h3>
-        <p>Vous n'avez pas encore effectué de réservation.</p>
-        <a routerLink="/hotels" class="btn btn-primary">Découvrir nos hôtels</a>
-      </div>
+      <section class="empty-state card text-center p-4">
+        <div class="icon" aria-hidden="true">📅</div>
+        <h2>Aucun voyage prévu</h2>
+        <p>Il est temps de planifier votre prochaine escapade !</p>
+        <a routerLink="/hotels" class="btn btn-primary mt-2">Explorer les hôtels</a>
+      </section>
     } @else {
-      <div class="bookings-list">
+      <!-- Grille de réservations flexible -->
+      <div class="bookings-grid-travel" role="list">
         @for (booking of bookings; track booking._id) {
-          <div class="booking-card">
-            <div class="booking-image">
+          <article class="booking-card-travel" role="listitem">
+            <div class="card-image">
               <img [src]="getHotelImage(booking)" [alt]="getHotelName(booking)" />
-              <span class="status-badge" [ngClass]="getStatusClass(booking.status)">
+              <div class="status-badge" [ngClass]="getStatusClass(booking.status)">
                 {{ getStatusLabel(booking.status) }}
-              </span>
+              </div>
             </div>
             
-            <div class="booking-info">
-              <h3>{{ getHotelName(booking) }}</h3>
-              <p class="room-name">🛏️ {{ getRoomName(booking) }}</p>
+            <div class="card-details">
+              <div class="hotel-info">
+                <h3>{{ getHotelName(booking) }}</h3>
+                <p class="room-type">🛏️ {{ getRoomName(booking) }}</p>
+              </div>
               
-              <div class="booking-dates">
-                <div class="date-item">
+              <div class="booking-dates-row">
+                <div class="date-box">
                   <span class="label">Arrivée</span>
                   <span class="value">{{ formatDate(booking.checkInDate) }}</span>
                 </div>
-                <div class="date-separator">→</div>
-                <div class="date-item">
+                <div class="date-arrow" aria-hidden="true">→</div>
+                <div class="date-box">
                   <span class="label">Départ</span>
                   <span class="value">{{ formatDate(booking.checkOutDate) }}</span>
                 </div>
               </div>
 
               <div class="booking-meta">
-                <span>🌙 {{ booking.numberOfNights }} nuit{{ booking.numberOfNights > 1 ? 's' : '' }}</span>
-                <span>👥 {{ booking.numberOfGuests.adults }} adulte{{ booking.numberOfGuests.adults > 1 ? 's' : '' }}</span>
-                <span class="payment-status" [class.paid]="booking.paymentStatus === 'paid'">
+                <span title="Durée du séjour">🌙 {{ booking.numberOfNights }} nuit{{ booking.numberOfNights > 1 ? 's' : '' }}</span>
+                <span title="Nombre de personnes">👥 {{ booking.numberOfGuests.adults }} pers.</span>
+                <span class="payment-status-badge" [class.paid]="booking.paymentStatus === 'paid'">
                   {{ getPaymentStatusLabel(booking.paymentStatus) }}
                 </span>
               </div>
             </div>
 
-            <div class="booking-price">
-              <span class="total-label">Total</span>
-              <span class="total-amount">{{ booking.totalPrice | number:'1.0-0' }} €</span>
-              <a [routerLink]="['/bookings', booking._id]" class="btn btn-outline">
-                Voir détails
+            <div class="card-pricing">
+              <div class="price-wrap">
+                <span class="total-label">Total séjour</span>
+                <span class="total-amount">{{ booking.totalPrice | number:'1.0-0' }} €</span>
+              </div>
+              <a [routerLink]="['/bookings', booking._id]" class="btn btn-outline btn-sm" [aria-label]="'Détails de votre séjour à ' + getHotelName(booking)">
+                Détails
               </a>
             </div>
-          </div>
+          </article>
         }
       </div>
 
-      <!-- Pagination -->
+      <!-- Pagination Travel -->
       @if (totalPages > 1) {
-        <div class="pagination">
-          <button
-            class="page-btn"
-            [disabled]="currentPage === 1"
-            (click)="goToPage(currentPage - 1)"
-          >
-            ← Précédent
-          </button>
-          
+        <nav class="pagination-travel mt-4" aria-label="Pagination des réservations">
+          <button [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Page précédente">‹</button>
           @for (page of getPages(); track page) {
-            <button
-              class="page-btn"
-              [class.active]="page === currentPage"
-              (click)="goToPage(page)"
-            >
-              {{ page }}
-            </button>
+            <button [class.active]="page === currentPage" (click)="goToPage(page)" [attr.aria-current]="page === currentPage ? 'page' : null">{{ page }}</button>
           }
-          
-          <button
-            class="page-btn"
-            [disabled]="currentPage === totalPages"
-            (click)="goToPage(currentPage + 1)"
-          >
-            Suivant →
-          </button>
-        </div>
+          <button [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" aria-label="Page suivante">›</button>
+        </nav>
       }
     }
   </div>
-</div>
+</main>

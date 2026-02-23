@@ -216,4 +216,10 @@ export class AmadeusSearchComponent implements OnInit {
     const count = rating ? parseInt(rating) : 0;
     return Array(count).fill(0);
   }
+
+  // Vérifie si une étoile doit être colorée (pour le template)
+  isStarFilled(index: number, rating: string | undefined): boolean {
+    if (!rating) return false;
+    return index < parseInt(rating);
+  }
 }

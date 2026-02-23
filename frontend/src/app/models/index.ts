@@ -35,6 +35,7 @@ export interface Hotel {
   amenities: string[];
   stars: number;
   rating: number;
+  price?: number; // Prix indicatif "à partir de"
   totalReviews: number;
   owner: User | string;
   isActive: boolean;

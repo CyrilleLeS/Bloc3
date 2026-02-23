@@ -1,72 +1,69 @@
-<nav class="navbar">
-  <div class="navbar-container">
-    <!-- Logo -->
-    <a routerLink="/" class="navbar-brand" (click)="closeMenus()">
-      <span class="logo-icon">🏨</span>
-      <span class="logo-text">Bloc3</span>
-    </a>
-
-    <!-- Menu burger mobile -->
-    <button class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    <!-- Navigation links -->
-    <div class="navbar-menu" [class.active]="isMenuOpen">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenus()">
-        Accueil
-      </a>
-      <a routerLink="/hotels" routerLinkActive="active" (click)="closeMenus()">
-        Hôtels
-      </a>
-      <a routerLink="/explore" routerLinkActive="active" (click)="closeMenus()">
-        🌍 Explorer
-      </a>
-
-      @if (currentUser) {
-        <a [routerLink]="getDashboardLink()" routerLinkActive="active" (click)="closeMenus()">
-          Dashboard
-        </a>
-        <a routerLink="/bookings" routerLinkActive="active" (click)="closeMenus()">
-          Mes Réservations
-        </a>
-      }
-    </div>
-
-    <!-- Auth section -->
-    <div class="navbar-auth">
-      @if (!currentUser) {
-        <a routerLink="/auth/login" class="btn btn-outline" (click)="closeMenus()">
-          Connexion
-        </a>
-        <a routerLink="/auth/register" class="btn btn-primary" (click)="closeMenus()">
-          Inscription
-        </a>
-      } @else {
-        <div class="profile-dropdown">
-          <button class="profile-btn" (click)="toggleProfileMenu()">
-            <span class="avatar">{{ currentUser.firstName.charAt(0) }}{{ currentUser.lastName.charAt(0) }}</span>
-            <span class="profile-name">{{ currentUser.firstName }}</span>
+<header class="main-header">
+  <!-- Barre supérieure pour l'authentification et les infos secondaires -->
+  <div class="top-bar">
+    <div class="container d-flex justify-between align-center">
+      <div class="top-info">
+        <span>📧 support@resahotel.com</span>
+        <span class="ml-2">📞 +33 1 23 45 67 89</span>
+      </div>
+      
+      <div class="top-auth">
+        @if (!currentUser) {
+          <a routerLink="/auth/login" class="auth-link">Connexion</a>
+          <span class="divider">|</span>
+          <a routerLink="/auth/register" class="auth-link">Inscription</a>
+        } @else {
+          <div class="user-profile-mini" (click)="toggleProfileMenu()">
+            <span class="user-name">Bonjour, {{ currentUser.firstName }}</span>
             <span class="dropdown-arrow" [class.open]="isProfileMenuOpen">▼</span>
-          </button>
-          
-          @if (isProfileMenuOpen) {
-            <div class="dropdown-menu">
-              <div class="dropdown-header">
-                <span class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
-                <span class="user-role">{{ currentUser.role }}</span>
+            
+            @if (isProfileMenuOpen) {
+              <div class="dropdown-menu">
+                <a routerLink="/profile" (click)="closeMenus()">Mon Profil</a>
+                <a [routerLink]="getDashboardLink()" (click)="closeMenus()">Tableau de bord</a>
+                <a routerLink="/bookings" (click)="closeMenus()">Mes Réservations</a>
+                <div class="dropdown-divider"></div>
+                <button (click)="logout()" class="logout-btn">Déconnexion</button>
               </div>
-              <div class="dropdown-divider"></div>
-              <a routerLink="/profile" (click)="closeMenus()">Mon Profil</a>
-              <a [routerLink]="getDashboardLink()" (click)="closeMenus()">Dashboard</a>
-              <div class="dropdown-divider"></div>
-              <button (click)="logout()" class="logout-btn">Déconnexion</button>
-            </div>
-          }
-        </div>
-      }
+            }
+          </div>
+        }
+      </div>
     </div>
   </div>
-</nav>
+
+  <!-- Barre de navigation principale -->
+  <nav class="navbar">
+    <div class="container navbar-container">
+      <!-- Logo -->
+      <a routerLink="/" class="navbar-brand" (click)="closeMenus()">
+        <span class="logo-text">Resa<span class="accent">Hotel</span></span>
+      </a>
+
+      <!-- Menu burger mobile -->
+      <button class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Liens de navigation -->
+      <div class="navbar-menu" [class.active]="isMenuOpen">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenus()">
+          Accueil
+        </a>
+        <a routerLink="/hotels" routerLinkActive="active" (click)="closeMenus()">
+          Hôtels
+        </a>
+        <a routerLink="/explore" routerLinkActive="active" (click)="closeMenus()">
+          Destinations
+        </a>
+        @if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hotelier')) {
+          <a [routerLink]="getDashboardLink()" routerLinkActive="active" (click)="closeMenus()">
+            Gestion
+          </a>
+        }
+      </div>
+    </div>
+  </nav>
+</header>

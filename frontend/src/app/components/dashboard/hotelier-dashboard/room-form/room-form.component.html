@@ -1,46 +1,49 @@
-<div class="form-page">
-  <div class="container">
-    <div class="page-header">
-      <a routerLink="/dashboard/hotelier" class="back-link">← Retour au dashboard</a>
-      <h1>{{ isEditMode ? 'Modifier la chambre' : 'Ajouter une chambre' }}</h1>
+<main class="form-page-travel" aria-labelledby="form-title">
+  <div class="container section-padding">
+    <header class="form-header-travel">
+      <a routerLink="/dashboard/hotelier" class="back-link">← Retour au tableau de bord</a>
+      <h1 id="form-title">{{ isEditMode ? 'Modifier' : 'Ajouter' }} une <span class="accent">Chambre</span></h1>
       @if (hotelName) {
-        <p class="hotel-name">🏨 {{ hotelName }}</p>
+        <p class="hotel-info">Hôtel : <strong>{{ hotelName }}</strong></p>
       }
-    </div>
+      <div class="title-line"></div>
+    </header>
 
-    <div class="form-card">
+    <section class="form-card-travel card">
       @if (error) {
-        <div class="alert alert-error">{{ error }}</div>
+        <div class="alert alert-error" role="alert">{{ error }}</div>
       }
 
-      <form [formGroup]="roomForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" aria-label="Détails de la chambre">
         <!-- Informations générales -->
-        <div class="form-section">
-          <h2>Informations générales</h2>
+        <fieldset class="form-section-travel">
+          <legend>Type & Description</legend>
 
           <div class="form-group">
-            <label for="name">Nom de la chambre *</label>
+            <label for="name">Nom de la chambre / Suite *</label>
             <input
               type="text"
               id="name"
               formControlName="name"
-              placeholder="Ex: Chambre Deluxe Vue Mer"
+              placeholder="Ex: Suite Royale Vue Mer"
+              aria-required="true"
+              [class.error]="f['name'].invalid && f['name'].touched"
             />
           </div>
 
           <div class="form-group">
-            <label for="description">Description</label>
+            <label for="description">Description (Services inclus)</label>
             <textarea
               id="description"
               formControlName="description"
               rows="3"
-              placeholder="Décrivez la chambre..."
+              placeholder="Décrivez les atouts de cette chambre..."
             ></textarea>
           </div>
 
-          <div class="form-row">
+          <div class="form-row-travel">
             <div class="form-group">
-              <label for="type">Type de chambre *</label>
+              <label for="type">Catégorie *</label>
               <select id="type" formControlName="type">
                 @for (type of roomTypes; track type.value) {
                   <option [value]="type.value">{{ type.label }}</option>
@@ -49,7 +52,7 @@
             </div>
 
             <div class="form-group">
-              <label for="bedType">Type de lit</label>
+              <label for="bedType">Type de literie</label>
               <select id="bedType" formControlName="bedType">
                 @for (bed of bedTypes; track bed.value) {
                   <option [value]="bed.value">{{ bed.label }}</option>
@@ -57,47 +60,32 @@
               </select>
             </div>
           </div>
-        </div>
+        </fieldset>
 
         <!-- Prix et capacité -->
-        <div class="form-section">
-          <h2>Prix et capacité</h2>
+        <fieldset class="form-section-travel">
+          <legend>Tarif & Capacité</legend>
 
-          <div class="form-row">
+          <div class="form-row-travel">
             <div class="form-group">
-              <label for="price">Prix par nuit (€) *</label>
-              <input
-                type="number"
-                id="price"
-                formControlName="price"
-                min="1"
-              />
+              <label for="price">Prix / nuit (€) *</label>
+              <input type="number" id="price" formControlName="price" min="1" aria-required="true" />
             </div>
 
             <div class="form-group">
-              <label for="size">Surface (m²)</label>
-              <input
-                type="number"
-                id="size"
-                formControlName="size"
-                min="1"
-              />
+              <label for="size">Surface habitable (m²)</label>
+              <input type="number" id="size" formControlName="size" min="1" />
             </div>
 
             <div class="form-group">
-              <label for="quantity">Quantité disponible *</label>
-              <input
-                type="number"
-                id="quantity"
-                formControlName="quantity"
-                min="1"
-              />
+              <label for="quantity">Stock de chambres *</label>
+              <input type="number" id="quantity" formControlName="quantity" min="1" aria-required="true" />
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row-travel mt-1">
             <div class="form-group">
-              <label for="adults">Capacité adultes *</label>
+              <label for="adults">Capacité (Adultes) *</label>
               <select id="adults" formControlName="adults">
                 @for (n of [1, 2, 3, 4, 5, 6]; track n) {
                   <option [value]="n">{{ n }} adulte{{ n > 1 ? 's' : '' }}</option>
@@ -106,7 +94,7 @@
             </div>
 
             <div class="form-group">
-              <label for="children">Capacité enfants</label>
+              <label for="children">Capacité (Enfants)</label>
               <select id="children" formControlName="children">
                 @for (n of [0, 1, 2, 3, 4]; track n) {
                   <option [value]="n">{{ n }} enfant{{ n > 1 ? 's' : '' }}</option>
@@ -114,38 +102,40 @@
               </select>
             </div>
           </div>
-        </div>
+        </fieldset>
 
         <!-- Équipements -->
-        <div class="form-section">
-          <h2>Équipements de la chambre</h2>
+        <fieldset class="form-section-travel">
+          <legend>Options de confort</legend>
+          <p class="section-hint-ui">Cochez les équipements spécifiques à cette chambre.</p>
 
-          <div class="amenities-grid">
+          <div class="amenities-selection-grid">
             @for (amenity of amenitiesList; track amenity.value) {
               <button
                 type="button"
-                class="amenity-btn"
+                class="amenity-chip"
                 [class.active]="isAmenitySelected(amenity.value)"
                 (click)="toggleAmenity(amenity.value)"
+                [attr.aria-pressed]="isAmenitySelected(amenity.value)"
               >
                 {{ amenity.label }}
               </button>
             }
           </div>
-        </div>
+        </fieldset>
 
         <!-- Actions -->
-        <div class="form-actions">
+        <div class="form-footer-actions">
           <a routerLink="/dashboard/hotelier" class="btn btn-outline">Annuler</a>
           <button type="submit" class="btn btn-primary" [disabled]="roomForm.invalid || submitting">
             @if (submitting) {
-              <span class="spinner-sm"></span> Enregistrement...
+              <span class="spinner-small"></span> Envoi en cours...
             } @else {
-              {{ isEditMode ? 'Enregistrer les modifications' : 'Créer la chambre' }}
+              {{ isEditMode ? 'Mettre à jour la chambre' : 'Enregistrer la chambre' }}
             }
           </button>
         </div>
       </form>
-    </div>
+    </section>
   </div>
-</div>
+</main>

@@ -1,9 +1,16 @@
-@use '../hotel-form/hotel-form.component.scss';
+// Formulaire Chambre - Thème Book Your Travel
+@use '../hotel-form/hotel-form.component.scss' as hotel;
 
-.page-header {
-  .hotel-name {
-    color: #667eea;
-    font-size: 1.1rem;
-    margin-top: 0.5rem;
+.form-page-travel {
+  background: var(--bg-light);
+  min-height: 100vh;
+}
+
+.form-header-travel {
+  .hotel-info {
+    font-size: 0.9rem; color: #888; margin-top: 0.5rem;
+    strong { color: var(--secondary-color); }
   }
 }
+
+// Les autres styles sont hérités via l'import de hotel-form

@@ -1,159 +1,140 @@
 <div class="hotel-list-page">
-  <div class="page-header">
+  <!-- En-tête de page avec fil d'Ariane -->
+  <div class="page-title-area">
     <div class="container">
-      <h1>Nos Hôtels</h1>
-      <p>Découvrez notre sélection d'hôtels</p>
+      <h1>Nos Destinations <span class="accent">Hôtelières</span></h1>
+      <nav class="breadcrumb">Accueil / Hôtels</nav>
     </div>
   </div>
 
-  <div class="container">
+  <div class="container section-padding">
     <div class="content-wrapper">
-      <!-- Sidebar Filtres -->
+      
+      <!-- Barre latérale de filtres (Responsive : passe au-dessus sur mobile) -->
       <aside class="filters-sidebar">
-        <div class="filters-card">
-          <h3>Filtres</h3>
-
-          <!-- Recherche par ville -->
+        <div class="filter-box">
+          <h3>Filtrer par</h3>
+          
+          <!-- Recherche par Ville -->
           <div class="filter-group">
-            <label>Ville</label>
-            <div class="search-input">
-              <input
-                type="text"
-                [(ngModel)]="searchCity"
-                placeholder="Rechercher une ville..."
-                (keyup.enter)="onSearch()"
-              />
-              <button (click)="onSearch()">🔍</button>
+            <label>Ville ou Destination</label>
+            <div class="search-input-travel">
+              <input type="text" [(ngModel)]="searchCity" placeholder="Où allez-vous ?" (keyup.enter)="onSearch()">
+              <button (click)="onSearch()" aria-label="Rechercher">🔍</button>
             </div>
           </div>
 
-          <!-- Filtre étoiles -->
+          <!-- Filtre par Étoiles -->
           <div class="filter-group">
-            <label>Étoiles</label>
-            <div class="stars-filter">
-              @for (star of [1, 2, 3, 4, 5]; track star) {
-                <button
-                  class="star-btn"
-                  [class.active]="selectedStars === star"
-                  (click)="onStarsChange(star)"
-                >
-                  {{ star }} ⭐
-                </button>
+            <label>Catégorie d'hôtel</label>
+            <div class="stars-filter-travel">
+              @for (star of [5, 4, 3, 2, 1]; track star) {
+                <div class="star-row" [class.active]="selectedStars === star" (click)="onStarsChange(star)">
+                  <span class="checkbox-ui"></span>
+                  <div class="star-icons">
+                    @for (s of [1,2,3,4,5]; track $index) {
+                      <span [class.filled]="$index < star">★</span>
+                    }
+                  </div>
+                </div>
               }
             </div>
           </div>
 
-          <!-- Filtre équipements -->
+          <!-- Filtre par Équipements -->
           <div class="filter-group">
             <label>Équipements</label>
-            <div class="amenities-filter">
+            <div class="amenities-list-travel">
               @for (amenity of amenitiesList; track amenity.value) {
-                <button
-                  class="amenity-btn"
-                  [class.active]="isAmenitySelected(amenity.value)"
-                  (click)="toggleAmenity(amenity.value)"
-                >
-                  {{ amenity.label }}
-                </button>
+                <div class="amenity-item" [class.active]="isAmenitySelected(amenity.value)" (click)="toggleAmenity(amenity.value)">
+                  <span class="checkbox-ui"></span>
+                  <span class="label">{{ amenity.label }}</span>
+                </div>
               }
             </div>
           </div>
 
-          <!-- Bouton reset -->
-          <button class="btn btn-outline btn-block" (click)="clearFilters()">
-            Réinitialiser les filtres
-          </button>
+          <button class="btn btn-outline btn-block mt-2" (click)="clearFilters()">Effacer les filtres</button>
         </div>
       </aside>
 
-      <!-- Liste des hôtels -->
-      <main class="hotels-content">
-        @if (loading) {
-          <div class="loading-state">
-            <div class="spinner-large"></div>
-            <p>Chargement des hôtels...</p>
+      <!-- Zone principale d'affichage des résultats -->
+      <main class="hotels-main">
+        <div class="results-header-travel">
+          <h2>{{ total }} établissement{{ total > 1 ? 's' : '' }} trouvé{{ total > 1 ? 's' : '' }}</h2>
+          <div class="sort-by">
+            <label>Trier par : </label>
+            <select class="sort-select">
+              <option>Prix (croissant)</option>
+              <option>Étoiles</option>
+              <option>Popularité</option>
+            </select>
           </div>
-        } @else if (error) {
-          <div class="alert alert-error">{{ error }}</div>
+        </div>
+
+        @if (loading) {
+          <!-- Animation de chargement -->
+          <div class="loader-container">
+            <div class="spinner spinner-primary"></div>
+            <p>Chargement des meilleures offres...</p>
+          </div>
         } @else if (hotels.length === 0) {
-          <div class="empty-state">
-            <span class="empty-icon">🏨</span>
-            <h3>Aucun hôtel trouvé</h3>
-            <p>Essayez de modifier vos critères de recherche</p>
-            <button class="btn btn-primary" (click)="clearFilters()">
-              Voir tous les hôtels
-            </button>
+          <!-- Message si aucun résultat -->
+          <div class="empty-results">
+            <div class="empty-icon">🏨</div>
+            <h3>Aucun hôtel ne correspond à votre recherche</h3>
+            <p>Essayez de modifier vos filtres ou de rechercher une autre ville.</p>
+            <button class="btn btn-primary" (click)="clearFilters()">Voir tous les hôtels</button>
           </div>
         } @else {
-          <div class="results-header">
-            <p>{{ total }} hôtel{{ total > 1 ? 's' : '' }} trouvé{{ total > 1 ? 's' : '' }}</p>
-          </div>
-
-          <div class="hotels-grid">
+          <!-- Liste des cartes d'hôtels -->
+          <div class="hotels-list-container">
             @for (hotel of hotels; track hotel._id) {
-              <div class="hotel-card">
-                <div class="hotel-image">
-                  <img [src]="getHotelImage(hotel)" [alt]="hotel.name" />
-                  <div class="hotel-stars">
+              <article class="hotel-card-horizontal">
+                <!-- Image de l'hôtel avec badge de prix -->
+                <div class="card-image-wrapper">
+                  <img [src]="getHotelImage(hotel)" [alt]="hotel.name" class="hotel-img">
+                  <div class="price-badge">
+                    <span class="small-text">À partir de</span>
+                    <span class="price-value">{{ hotel.price || 85 }}€</span>
+                  </div>
+                </div>
+                
+                <!-- Informations et description -->
+                <div class="card-details">
+                  <div class="stars-rating">
                     @for (s of getStars(hotel.stars); track $index) {
-                      <span>⭐</span>
+                      <span class="star">★</span>
                     }
                   </div>
-                  @if (hotel.rating > 0) {
-                    <div class="hotel-rating">{{ hotel.rating | number:'1.1-1' }}</div>
-                  }
-                </div>
-                <div class="hotel-info">
                   <h3>{{ hotel.name }}</h3>
-                  <p class="hotel-location">📍 {{ hotel.address.city }}, {{ hotel.address.country }}</p>
-                  <p class="hotel-description">{{ hotel.description | slice:0:120 }}...</p>
-                  <div class="hotel-amenities">
-                    @for (amenity of hotel.amenities | slice:0:4; track amenity) {
-                      <span class="amenity-tag">{{ amenity }}</span>
-                    }
-                    @if (hotel.amenities.length > 4) {
-                      <span class="amenity-more">+{{ hotel.amenities.length - 4 }}</span>
-                    }
-                  </div>
-                  <div class="hotel-footer">
-                    <a [routerLink]="['/hotels', hotel._id]" class="btn btn-primary">
-                      Voir les chambres
-                    </a>
+                  <p class="location-text">📍 {{ hotel.address.city }}, {{ hotel.address.country }}</p>
+                  <p class="description-text">{{ hotel.description | slice:0:160 }}...</p>
+                  
+                  <div class="card-bottom">
+                    <div class="amenities-tags">
+                      @for (a of hotel.amenities | slice:0:3; track a) {
+                        <span class="tag">{{ a }}</span>
+                      }
+                    </div>
+                    <a [routerLink]="['/hotels', hotel._id]" class="btn btn-primary btn-sm">Réserver</a>
                   </div>
                 </div>
-              </div>
+              </article>
             }
           </div>
 
-          <!-- Pagination -->
+          <!-- Système de pagination -->
           @if (totalPages > 1) {
-            <div class="pagination">
-              <button
-                class="page-btn"
-                [disabled]="currentPage === 1"
-                (click)="goToPage(currentPage - 1)"
-              >
-                ← Précédent
-              </button>
-              
-              @for (page of getPages(); track page) {
-                <button
-                  class="page-btn"
-                  [class.active]="page === currentPage"
-                  (click)="goToPage(page)"
-                >
-                  {{ page }}
-                </button>
-              }
-              
-              <button
-                class="page-btn"
-                [disabled]="currentPage === totalPages"
-                (click)="goToPage(currentPage + 1)"
-              >
-                Suivant →
-              </button>
-            </div>
+            <nav class="pagination-container" aria-label="Navigation de page">
+              <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Précédent</button>
+              <div class="page-numbers">
+                @for (page of getPages(); track page) {
+                  <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">{{ page }}</button>
+                }
+              </div>
+              <button class="page-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Suivant</button>
+            </nav>
           }
         }
       </main>

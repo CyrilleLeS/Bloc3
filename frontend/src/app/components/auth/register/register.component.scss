@@ -1,32 +1,89 @@
-@use '../login/login.component.scss';
-
-.auth-card {
-  max-width: 500px;
+// Page d'Inscription - Thème Book Your Travel
+.auth-container {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  background: var(--bg-light, #f4f4f4);
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.auth-card {
+  background: #fff;
+  border: 1px solid var(--border-color, #e6e6e6);
+  border-radius: 4px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  padding: 3rem 2rem;
+  width: 100%;
+  max-width: 550px; // Un peu plus large pour accommoder le formulaire d'inscription complet
 
   @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+
+    h1 {
+      font-size: 1.8rem;
+      color: var(--primary-color, #2f435e);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.8rem;
+    }
+
+    p {
+      color: #777;
+      font-size: 0.9rem;
+    }
   }
 }
 
-select {
-  width: 100%;
-  padding: 0.9rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 1rem;
-  background: #fff;
-  cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s;
+// Mise en page responsive des champs (ex: Prénom/Nom sur la même ligne si possible)
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 
-  &:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 0; // Utilise la marge du form-group à la place
+  }
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  
+  label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  input, select {
+    width: 100%;
+    border-radius: 2px;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    font-size: 0.95rem;
+    &:focus { border-color: var(--secondary-color); outline: none; }
+  }
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+  font-size: 0.9rem;
+
+  a {
+    color: var(--secondary-color);
+    font-weight: 700;
+    &:hover { color: var(--primary-color); }
   }
 }
