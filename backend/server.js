@@ -61,7 +61,7 @@ app.use((err, req, res, next) => {
 
 // 9. Démarrage du Serveur
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
   console.log(`Mode: ${process.env.NODE_ENV}`);
 });
