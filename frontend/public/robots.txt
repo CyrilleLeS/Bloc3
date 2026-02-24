@@ -1,0 +1,11 @@
+# Autoriser tous les moteurs de recherche à indexer le site
+User-agent: *
+Allow: /
+
+# Bloquer l'indexation des pages d'administration et de profil privé
+Disallow: /admin-dashboard
+Disallow: /profile
+Disallow: /booking-detail
+
+# Lien vers le sitemap (à générer plus tard si besoin)
+# Sitemap: https://resahotel.com/sitemap.xml
