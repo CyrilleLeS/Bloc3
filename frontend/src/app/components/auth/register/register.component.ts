@@ -3,14 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-
-// Composant d'Inscription (Register)
-// Permet de créer un nouveau compte utilisateur
+import { SuccessModalComponent } from '../../../shared/components/success-modal/success-modal.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, SuccessModalComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -18,6 +16,8 @@ export class RegisterComponent {
   registerForm: FormGroup;
   loading = false;
   error = '';
+  showSuccessModal = false; // Pour contrôler l'affichage du modal
+  registerResponse: any; // Stocker la réponse
 
   constructor(
     private fb: FormBuilder,
@@ -75,21 +75,25 @@ export class RegisterComponent {
     this.authService.register({ firstName, lastName, email, password, role, phone }).subscribe({
       next: (res) => {
         this.loading = false;
-        // Redirection intelligente selon le rôle choisi
-        switch (res.user.role) {
-          case 'hotelier':
-            // Si c'est un hôtelier, on l'envoie direct sur son tableau de bord
-            this.router.navigate(['/dashboard/hotelier']);
-            break;
-          default:
-            // Pour un client classique, retour à l'accueil
-            this.router.navigate(['/']);
-        }
+        this.registerResponse = res;
+        this.showSuccessModal = true;
       },
       error: (err) => {
         this.loading = false;
         this.error = err.error?.message || 'Erreur lors de l\'inscription';
       }
     });
+  }
+
+  // Lancée quand l'utilisateur clique sur "Continuer" dans le modal
+  handleSuccessClose(): void {
+    const res = this.registerResponse;
+    switch (res.user.role) {
+      case 'hotelier':
+        this.router.navigate(['/dashboard/hotelier']);
+        break;
+      default:
+        this.router.navigate(['/']);
+    }
   }
 }

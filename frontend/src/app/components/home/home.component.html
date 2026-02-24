@@ -20,7 +20,7 @@
           </div>
           <div class="input-group">
             <label>Dates (Optionnel)</label>
-            <input type="date" placeholder="Arrivée">
+            <input type="date" [min]="minDate" placeholder="Arrivée">
           </div>
           <button class="btn btn-primary search-btn" (click)="onSearch()">Rechercher</button>
         </div>

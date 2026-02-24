@@ -20,6 +20,7 @@ export class HomeComponent implements OnInit {
   featuredHotels: Hotel[] = []; // Liste des hôtels mis en avant
   loading = true; // État de chargement
   searchCity = ''; // Valeur du champ de recherche
+  minDate = ''; // Date minimum autorisée (Aujourd'hui)
 
   constructor(
     private hotelService: HotelService,
@@ -28,6 +29,16 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFeaturedHotels();
+    this.setMinDate(); // Initialise la date minimum
+  }
+
+  // Définit la date minimum sur aujourd'hui au format YYYY-MM-DD
+  setMinDate(): void {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    this.minDate = `${year}-${month}-${day}`;
   }
 
   // Charge les 6 premiers hôtels pour les afficher en vitrine

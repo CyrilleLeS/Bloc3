@@ -112,12 +112,45 @@ ng serve
 
 ### Tests Unitaires (Frontend)
 
-Le projet utilise **Jasmine** et **Karma**.
+   1. Backend (`backend/tests/authController.test.js`) :
+       * Tests de l'inscription (succès et email déjà pris).
+       * Tests de la connexion (identifiants valides et mot de passe incorrect).
+       * Utilisation de Jest avec des simulations (mocks) pour isoler la logique métier de la base de données.
 
-```bash
-cd frontend
-ng test
-```
+
+   2. Frontend (`frontend/src/app/services/hotel.service.spec.ts`) :
+       * Test de la récupération des hôtels.
+       * Test de la création d'un hôtel (envoi de données POST).
+       * Test des filtres de recherche (vérification que les paramètres sont correctement ajoutés à l'URL).
+       * Utilisation du framework de test standard d'Angular.
+
+
+  Pour exécuter ces tests :
+   * Backend : Installez Jest (npm install --save-dev jest) puis lancez npx jest.
+   * Frontend : Lancez la commande ng test depuis le dossier frontend.
+
+### Tests End-to-End (E2E)
+
+   1. Architecture Page Object Model (POM) :
+       * Le fichier e2e/pages/LoginPage.js centralise les sélecteurs (comme les champs email et password) et les actions (comme la 
+         méthode login). Cela rend les tests plus faciles à lire et à maintenir.
+
+
+   2. Scénarios de test d'authentification (`e2e/auth.spec.js`) :
+       * Test de connexion réussie : Vérifie qu'un utilisateur peut se connecter et être redirigé vers son tableau de bord.
+       * Test d'échec de connexion : Vérifie que l'application affiche bien un message d'erreur rouge (.alert-error) si les
+         identifiants sont faux.
+       * Test de navigation : Vérifie que le lien "Inscrivez-vous" fonctionne et change bien l'URL vers /register.
+
+
+  Pour exécuter ces tests :
+   1. Installer Playwright :
+      npm install --save-dev @playwright/test
+   2. Lancer les tests :
+      npx playwright test
+      (Assurez-vous que votre frontend tourne sur le port 4200)
+   3. Voir le rapport visuel :
+      npx playwright show-report
 
 ### Tests d’Intégration (Backend)
 

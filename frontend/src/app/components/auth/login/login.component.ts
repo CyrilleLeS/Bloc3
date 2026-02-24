@@ -3,26 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-
-// Composant de Connexion (Login)
-// Affiche un formulaire pour que l'utilisateur puisse s'identifier
+import { SuccessModalComponent } from '../../../shared/components/success-modal/success-modal.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, SuccessModalComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  // Le formulaire réactif (Reactive Form)
   loginForm: FormGroup;
-  // État de chargement (pour afficher un spinner)
   loading = false;
-  // Message d'erreur éventuel
   error = '';
-  // URL où rediriger après connexion (par défaut l'accueil)
   returnUrl = '/';
+  showSuccessModal = false; // Pour contrôler l'affichage du modal
+  loginResponse: any; // Stocker la réponse pour la redirection ultérieure
 
   constructor(
     private fb: FormBuilder, // Pour construire le formulaire facilement
@@ -67,30 +63,32 @@ export class LoginComponent {
     this.authService.login(email, password).subscribe({
       next: (res) => {
         this.loading = false;
-        
-        // Connexion réussie ! On redirige.
-        if (this.returnUrl !== '/') {
-          // Si une page précise était demandée, on y va
-          this.router.navigate([this.returnUrl]);
-        } else {
-          // Sinon, on redirige vers le dashboard approprié selon le rôle
-          switch (res.user.role) {
-            case 'admin':
-              this.router.navigate(['/dashboard/admin']);
-              break;
-            case 'hotelier':
-              this.router.navigate(['/dashboard/hotelier']);
-              break;
-            default: // Client
-              this.router.navigate(['/']); // Retour à l'accueil pour les clients
-          }
-        }
+        this.loginResponse = res;
+        this.showSuccessModal = true; // Affiche le petit modal de succès
       },
       error: (err) => {
         this.loading = false;
-        // On affiche le message d'erreur envoyé par le serveur
         this.error = err.error?.message || 'Erreur lors de la connexion';
       }
     });
+  }
+
+  // Lancée quand l'utilisateur clique sur "Continuer" dans le modal
+  handleSuccessClose(): void {
+    const res = this.loginResponse;
+    if (this.returnUrl !== '/') {
+      this.router.navigate([this.returnUrl]);
+    } else {
+      switch (res.user.role) {
+        case 'admin':
+          this.router.navigate(['/dashboard/admin']);
+          break;
+        case 'hotelier':
+          this.router.navigate(['/dashboard/hotelier']);
+          break;
+        default:
+          this.router.navigate(['/']);
+      }
+    }
   }
 }
