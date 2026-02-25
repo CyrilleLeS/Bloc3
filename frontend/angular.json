@@ -58,6 +58,9 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options": {
+            "allowedHosts": ["unplugged-craft.fr"]
+          },
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {

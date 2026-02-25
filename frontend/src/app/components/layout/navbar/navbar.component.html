@@ -4,7 +4,8 @@
     <div class="container d-flex justify-between align-center">
       <div class="top-info">
         <span>📧 support@resahotel.com</span>
-        <span class="ml-2">📞 +33 1 23 45 67 89</span>
+        <span>📞 +33 1 23 45 67 89</span>
+        <span>📍 Paris, France</span>
       </div>
       
       <div class="top-auth">
@@ -14,16 +15,25 @@
           <a routerLink="/auth/register" class="auth-link">Inscription</a>
         } @else {
           <div class="user-profile-mini" (click)="toggleProfileMenu()">
-            <span class="user-name">Bonjour, {{ currentUser.firstName }}</span>
-            <span class="dropdown-arrow" [class.open]="isProfileMenuOpen">▼</span>
+            <span class="user-icon">👤</span>
+            <span class="user-name">{{ currentUser.firstName }}</span>
+            <span class="dropdown-arrow" [class.open]="isProfileMenuOpen">▾</span>
             
             @if (isProfileMenuOpen) {
               <div class="dropdown-menu">
-                <a routerLink="/profile" (click)="closeMenus()">Mon Profil</a>
-                <a [routerLink]="getDashboardLink()" (click)="closeMenus()">Tableau de bord</a>
-                <a routerLink="/bookings" (click)="closeMenus()">Mes Réservations</a>
+                <a routerLink="/profile" (click)="closeMenus()">
+                  <span class="icon">⚙️</span> Mon Profil
+                </a>
+                <a [routerLink]="getDashboardLink()" (click)="closeMenus()">
+                  <span class="icon">📊</span> Tableau de bord
+                </a>
+                <a routerLink="/bookings" (click)="closeMenus()">
+                  <span class="icon">📅</span> Mes Réservations
+                </a>
                 <div class="dropdown-divider"></div>
-                <button (click)="logout()" class="logout-btn">Déconnexion</button>
+                <button (click)="logout()" class="logout-btn">
+                  <span class="icon">🚪</span> Déconnexion
+                </button>
               </div>
             }
           </div>
